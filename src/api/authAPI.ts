@@ -16,6 +16,10 @@ export interface AuthResponse {
     token: string;
     user: User;
 }
+export interface ProfileResponse {
+    status: number;
+    user: User;
+}
 const mockUsersDatabase = [
     {
         id: "US01",
@@ -26,7 +30,7 @@ const mockUsersDatabase = [
     }
 ];
 
-export const fakePostLoginAPI = (credentials) => {
+export const fakePostLoginAPI = (credentials: LoginCredentials) => {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
             const user = mockUsersDatabase.find(
@@ -34,7 +38,7 @@ export const fakePostLoginAPI = (credentials) => {
             if(user) {
                 const { password, ...userWithoutPassword} = user;
                 resolve({
-                    status: "success",
+                    status: 200,
                     token: "fake-jwt-token-education-2026",
                     user: userWithoutPassword,
                 });
@@ -43,4 +47,19 @@ export const fakePostLoginAPI = (credentials) => {
             }
         },1000);
     });
+}
+export const fakeGetProfileApi = (token: string):Promise<ProfileResponse> => {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            if (token==="fake-jwt-token-education-2026") {
+                const {password, ...userWithoutPassword} = mockUsersDatabase[0];
+                resolve({
+                    status: 200,
+                    user: userWithoutPassword
+                });
+            } else {
+                reject(new Error("Not found profile"));
+            }
+        }, 500);
+    })
 }
