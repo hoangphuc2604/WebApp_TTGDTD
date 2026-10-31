@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { login, clearError} from '../store/authSlice';
-import {useNavigate} from 'react-router-dom';
+import { login, clearError } from '../store/authSlice';
+import { useNavigate } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
 
-const Login = () => {
-    const [email, setEmail] = useState('user@gmail.com');
-    const [password, setPassword] = useState('123');
-    const dispatch = useDispatch();
+const Login: React.FC = () => {
+    const [email, setEmail] = useState<string>('user@gmail.com');
+    const [password, setPassword] = useState<string>('123');
+    const dispatch = useAppDispatch();
     const navigate = useNavigate();
-    const { loading, error, isAuthenticated } = useSelector((state: any) => state.auth);
+    const { loading, error, isAuthenticated } = useAppSelector((state: any) => state.auth);
     useEffect(() => {
         if (isAuthenticated) {
             navigate('/dashboard');
         }
     }, [isAuthenticated,navigate]);
-    const handleSubmit = (e) =>{
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) =>{
         e.preventDefault();
         // @ts-ignore
         dispatch(login({ email, password }));
