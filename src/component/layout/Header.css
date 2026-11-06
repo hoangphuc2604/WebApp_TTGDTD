@@ -1,4 +1,3 @@
-
 .page-header {
     width: 100%;
     background: #fff;
@@ -10,9 +9,10 @@
 .page-header * {
     box-sizing: border-box;
 }
+
 .page-header .top-container,
 .page-header .brand-area .container,
-.page-header .nav-container {
+.nav-container {
     width: 100%;
     max-width: 1170px;
     margin-left: auto;
@@ -192,20 +192,25 @@
     stroke-linejoin: round;
 }
 
-.page-header .main-navigation {
+.main-navigation {
     width: 100%;
     height: 39px;
     background-color: #c31e40;
+
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
-.page-header .nav-container {
+.nav-container {
     height: 39px;
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
-.page-header .home-button {
+.home-button {
     width: 56px;
     height: 39px;
     flex-shrink: 0;
@@ -218,7 +223,7 @@
     text-decoration: none;
 }
 
-.page-header .home-button svg {
+.home-button svg {
     width: 20px;
     height: 20px;
     fill: none;
@@ -228,12 +233,12 @@
     stroke-linejoin: round;
 }
 
-.page-header .home-button:hover,
-.page-header .home-button.active {
+.home-button:hover,
+.home-button.active {
     background-color: rgba(36, 35, 35, 0.2);
 }
 
-.page-header .menu-list {
+.menu-list {
     height: 39px;
     display: flex;
     align-items: center;
@@ -244,7 +249,14 @@
     list-style: none;
 }
 
-.page-header .menu-item {
+.menu-item {
+    position: relative;
+    display: flex;
+    height: 100%;
+    align-items: center;
+}
+
+.menu-link {
     display: inline-block;
     padding: 8px 4px;
     color: #fff;
@@ -256,20 +268,61 @@
     transition: all 0.1s ease-in-out;
 }
 
-.page-header .menu-item:hover {
+.menu-link:hover {
     color: #f7ce1a;
-    text-decoration: none;
 }
 
-.page-header .menu-item.active {
-    color: #fff;
+.menu-link.active {
     background-color: rgba(36, 35, 35, 0.2);
 }
 
-@media (max-width: 1279.98px) {
-    .page-header .top-container,
-    .page-header .brand-area .container,
-    .page-header .nav-container {
-        max-width: 980px;
-    }
+.sub-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+
+    display: none;
+    min-width: 200px;
+
+    padding: 10px 21px 10px 21px;
+    margin: 0;
+    list-style: none;
+
+    background: #fff;
+    box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.25);
+    border-radius: 2px;
+    z-index: 10;
+}
+
+.menu-item:hover .sub-menu {
+    display: block;
+}
+
+.sub-item {
+    display: block;
+}
+
+.sub-link {
+    display: block;
+    padding: 0;
+    font-size: 16px;
+    line-height: 33px;
+    color: #242424;
+    text-decoration: none;
+    white-space: nowrap;
+    font-weight: 600;
+}
+
+.sub-link:hover {
+    color: #c31e40;
+}
+
+.sub-link.active {
+    color: #c31e40;
+    font-weight: 600;
+}
+
+.menu-item:last-child .sub-menu {
+    right: 0;
+    left: auto;
 }

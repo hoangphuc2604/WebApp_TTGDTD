@@ -1,18 +1,16 @@
-import React from "react";
 import Header from '../component/layout/Header';
+import Footer from '../component/layout/Footer';
 
 function HomePage() {
     return (
         <>
             <Header />
-
-            <main className="container mt-4">
-                <h1></h1>
-
-                <p>
-
-                </p>
+            <main
+                className="container mt-4"
+                style={{ minHeight: '60vh' }}
+            >
             </main>
+            <Footer />
         </>
     );
 }
