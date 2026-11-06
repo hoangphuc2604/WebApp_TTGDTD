@@ -1,0 +1,113 @@
+.page-footer {
+    background-color: #c31e40;
+    color: #fff;
+    font-family: GoogleSans, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.65;
+    padding: 38px 0 35px;
+    margin-top: 40px;
+}
+
+.page-footer * {
+    box-sizing: border-box;
+}
+
+.page-footer a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.page-footer a:hover {
+    text-decoration: underline;
+}
+
+.page-footer .footer-container {
+    width: 100%;
+    max-width: 1170px;
+    margin: 0 auto;
+    padding: 0 12px;
+
+    display: grid;
+    grid-template-columns: 220px 1fr 1fr;
+    gap: 40px;
+    align-items: start;
+}
+
+.page-footer .footer-col p {
+    margin: 0 0 6px;
+    font-size: 15px;
+}
+
+.page-footer .footer-brand {
+    display: block;
+    text-decoration: none;
+    margin-bottom: 10px;
+}
+
+.page-footer .footer-brand img {
+    display: block;
+    width: 180px;
+    height: auto;
+    /* Biến logo đỏ-cam thành trắng trên nền đỏ */
+    filter: brightness(0) invert(1);
+}
+
+.page-footer .footer-brand-title {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: 0.3px;
+    line-height: 1.4;
+}
+
+.page-footer .footer-slogan {
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    line-height: 1.55;
+    margin-bottom: 12px !important;
+}
+
+.page-footer .footer-note {
+    margin-top: 10px !important;
+    font-style: italic;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.page-footer .footer-heading {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin: 0 0 8px;
+    line-height: 1.4;
+}
+
+.page-footer .footer-heading--spaced {
+    margin-top: 22px;
+}
+
+@media (max-width: 991.98px) {
+    .page-footer .footer-container {
+        grid-template-columns: 180px 1fr;
+        gap: 32px;
+    }
+
+    .page-footer .footer-contact-col {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .page-footer .footer-container {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .page-footer .footer-brand img {
+        width: 150px;
+    }
+}
