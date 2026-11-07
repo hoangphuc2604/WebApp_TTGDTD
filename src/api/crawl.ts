@@ -2,7 +2,7 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import fs from 'fs';
 import {Article} from "./articleAPI";
-import {i} from "vite/dist/node/chunks/moduleRunnerTransport";
+// import {i} from "vite/dist/node/chunks/moduleRunnerTransport";
 
 async function scrapeNews() {
     try{
