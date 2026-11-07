@@ -10,7 +10,7 @@ import {
 
 import { fetchUserProfile } from './store/authSlice';
 import { useAppDispatch, useAppSelector } from './store/hooks';
-
+import ChiTietSanPham from './pages/news-detail';
 import Login from './component/Login';
 import Dashboard from './pages/dashboard-test';
 import HomePage from './pages/HomePage';
@@ -59,6 +59,7 @@ const App: React.FC = () => {
                     path="/"
                     element={<HomePage />}
                 />
+                <Route path="/bai-viet/:id" element={<ChiTietSanPham />} />
 
                 {/* Trang đăng nhập */}
                 <Route
