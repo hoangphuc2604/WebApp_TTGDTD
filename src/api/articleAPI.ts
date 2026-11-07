@@ -6,6 +6,8 @@ export interface Article {
     content: string;
     author: string;
     date: string;
+    link: string;
+    category: string;
 }
 
 export const mockArticles: Article[] = [
@@ -17,6 +19,8 @@ export const mockArticles: Article[] = [
         content: "Nội dung chi tiết của bài viết",
         author: "Nguyễn Anh Hùng",
         date: "07/11/2026",
+        link: "",
+        category: ""
     },
     {
         id: "sinh-vien-cntt-va-co-hoi-viec-lam",
@@ -26,5 +30,7 @@ export const mockArticles: Article[] = [
         content: "Nội dung chi tiết của bài viết",
         author: "Trần Hà Lan",
         date: "05/11/2026",
+        link: "",
+        category: ""
     }
 ]
