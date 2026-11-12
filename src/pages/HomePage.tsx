@@ -1,43 +1,45 @@
 import Header from '../component/layout/Header';
 import Footer from '../component/layout/Footer';
+import NewsGroup from "../component/news/NewsGroup";
 import { articles } from '../api/articleAPI';
 import './HomePage.css';
 
+const GROUPS =[
+    {
+        heading: "Tin mới nhất",
+        subLinks: [
+            { label: "Giáo dục", path: "/chuyen-muc/giao-duc" },
+            { label: "Thời sự", path: "/chuyen-muc/thoi-su" },
+            { label: "Pháp luật", path: "/chuyen-muc/giao-duc-phap-luat" },
+        ],
+    },
+    { heading: "Tin nổi bật" },
+    { heading: "Đọc nhiều" },
+    { heading: "Xem thêm" },
+]
+function chunk<T>(arr: T[], size: number): T[][] {
+    const result: T[][] = [];
+    for (let i = 0; i < arr.length; i += size) result.push(arr.slice(i, i + size));
+    return result;
+}
 function HomePage() {
+    const groups = chunk(articles, 5);
+
     return (
         <>
             <Header />
             <main className="container mt-4 mb-5 news-container">
-                <h3 className="mb-4 fw-bold news-section-title">
-                    TIN TỨC MỚI NHẤT
-                </h3>
-                <hr />
-                <div className="row">
-                    {articles.map((article) => (
-                        <div className="col-md-4 mb-4" key={article.id}>
-                            <div className="card h-100 shadow-sm article-card">
-                                <img src={article.thumbnail} className="card-img-top article-thumbnail" alt={article.title}/>
-                                <div className="card-body">
-                                    <h5 className="card-title fw-bold article-title">
-                                        {article.title}
-                                    </h5>
-                                    <p className="card-text text-muted mt-2 article-desc">
-                                        {article.description || "Đang cập nhật nội dung..."}
-                                    </p>
-                                </div>
-
-                                <div className="card-footer bg-white border-top text-muted d-flex justify-content-between article-meta">
-                                    <span>
-                                        Tác giả: {article.author || "Ban Biên tập"}
-                                    </span>
-                                    <span>
-                                        {new Date(article.date).toLocaleDateString("vi-VN")}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                {groups.map((group, i) => {
+                    const config = GROUPS[i] ?? {};
+                    return (
+                        <NewsGroup
+                            key={i}
+                            articles={group}
+                            heading={config.heading}
+                            subLinks={config.subLinks}
+                        />
+                    );
+                })}
             </main>
             <Footer />
         </>
