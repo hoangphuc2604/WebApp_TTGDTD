@@ -14,7 +14,7 @@ import ChiTietSanPham from './pages/news-detail';
 import Login from './component/Login';
 import Dashboard from './pages/dashboard-test';
 import HomePage from './pages/HomePage';
-
+import CategoryPage from './pages/CategoryPage';
 interface ProtectedRouteProps {
     children: React.ReactNode;
 }
@@ -53,35 +53,17 @@ const App: React.FC = () => {
     return (
         <Router>
             <Routes>
+                <Route path="/" element={<HomePage />}/>
 
-                {/* Trang chủ */}
-                <Route
-                    path="/"
-                    element={<HomePage />}
-                />
                 <Route path="/bai-viet/:id" element={<ChiTietSanPham />} />
 
-                {/* Trang đăng nhập */}
-                <Route
-                    path="/login"
-                    element={<Login />}
-                />
+                <Route path="/login" element={<Login />}/>
 
-                {/* Trang quản trị */}
-                <Route
-                    path="/dashboard"
-                    element={
-                        <ProtectedRoute>
-                            <Dashboard />
-                        </ProtectedRoute>
-                    }
-                />
+                <Route path="/chuyen-muc/:slug" element={<CategoryPage />} />
 
-                {/* Đường dẫn không tồn tại */}
-                <Route
-                    path="*"
-                    element={<Navigate to="/" replace />}
-                />
+                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>}/>
+
+                <Route path="*" element={<Navigate to="/" replace />}/>
 
             </Routes>
         </Router>
