@@ -1,11 +1,11 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {Article, articles} from "../api/articleAPI";
 
-export type SoftOrder = 'newest'|'oldest';
+export type SortOrder = 'newest'|'oldest';
 interface SearchResult {
     keywords: string;
     category: string;
-    sortBy: SoftOrder;
+    sortBy: SortOrder;
     results: Article[];
 }
 const initialState: SearchResult = {
@@ -14,7 +14,7 @@ const initialState: SearchResult = {
     sortBy:'newest',
     results: articles,
 }
-function filterArticle(keywords: string, category: string, sortBy: SoftOrder) {
+function filterArticle(keywords: string, category: string, sortBy: SortOrder) {
     const cleanKeywords = keywords.trim().toLowerCase();
     const cleanCategory = category.trim().toLowerCase();
     const filter = articles.filter(article => {
@@ -34,7 +34,7 @@ const searchSlice = createSlice({
     reducers:{
         executeSearch: (
             state,
-            action: PayloadAction<{ keywords?: string; category?: string; sortBy?: SoftOrder}>
+            action: PayloadAction<{ keywords?: string; category?: string; sortBy?: SortOrder}>
         ) => {
             if (action.payload.keywords !== undefined) {
                 state.keywords = action.payload.keywords;

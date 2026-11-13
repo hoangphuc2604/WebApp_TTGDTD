@@ -14,6 +14,7 @@ import ChiTietSanPham from './pages/news-detail';
 import Login from './component/Login';
 import Dashboard from './pages/dashboard-test';
 import HomePage from './pages/HomePage';
+import SearchPage from './pages/searchPage';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
@@ -81,6 +82,10 @@ const App: React.FC = () => {
                 <Route
                     path="*"
                     element={<Navigate to="/" replace />}
+                />
+                <Route
+                    path="/tim-kiem"
+                    element={<SearchPage />}
                 />
 
             </Routes>
