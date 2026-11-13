@@ -1,3 +1,4 @@
+import React from 'react';
 import Header from '../component/layout/Header';
 import Footer from '../component/layout/Footer';
 import NewsGroup from "../component/news/NewsGroup";
