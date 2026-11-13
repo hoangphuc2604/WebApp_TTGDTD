@@ -1,7 +1,9 @@
 import Header from '../component/layout/Header';
 import Footer from '../component/layout/Footer';
 import NewsGroup from "../component/news/NewsGroup";
-import { articles } from '../api/articleAPI';
+import {useEffect} from "react";
+import {useAppDispatch, useAppSelector} from "../store/hooks";
+import {fetchNews} from "../store/newsSlice";
 import './HomePage.css';
 
 const GROUPS =[
@@ -23,23 +25,34 @@ function chunk<T>(arr: T[], size: number): T[][] {
     return result;
 }
 function HomePage() {
+    const dispatch = useAppDispatch();
+    const {articles, loading} = useAppSelector(state => state.news);
+    useEffect(() =>{
+        dispatch(fetchNews());
+    }, [dispatch]);
     const groups = chunk(articles, 5);
 
     return (
         <>
             <Header />
             <main className="container mt-4 mb-5 news-container">
-                {groups.map((group, i) => {
-                    const config = GROUPS[i] ?? {};
-                    return (
-                        <NewsGroup
-                            key={i}
-                            articles={group}
-                            heading={config.heading}
-                            subLinks={config.subLinks}
-                        />
-                    );
-                })}
+                {loading ? (
+                    <h4 className="text-center mt-5" style={{color:'red'}}>
+                        Đang tải tin tức mới...
+                    </h4>
+                ) : (
+                    groups.map((group, i) => {
+                        const config = GROUPS[i] ?? {};
+                        return (
+                            <NewsGroup
+                                key={i}
+                                articles={group}
+                                heading={config.heading}
+                                subLinks={config.subLinks}
+                            />
+                        );
+                    })
+                )}
             </main>
             <Footer />
         </>
