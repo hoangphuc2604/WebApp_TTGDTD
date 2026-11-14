@@ -14,7 +14,7 @@ async function scrapeNews() {
         $('.box-story, article, .story, .timeline-item').each((i, el) => {
             const title = $(el).find('.story__title, .title, h2, h3, .box-story__title').text().trim();
             let link = $(el).find('a').attr('href')||'';
-            const thumbnail = $(el).find('img').attr('src')||$(el).find('img').attr('data-src')||'https://via.placeholder.com/300x200';
+            const thumbnail = $(el).find('img').attr('data-src') || $(el).find('img').attr('src') || 'https://via.placeholder.com/300x200'
             const description = $(el).find('.story__summary, .box-story__sapo, .sapo, p').text().trim();
 
             if (link && title) {
