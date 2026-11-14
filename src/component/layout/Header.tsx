@@ -135,6 +135,12 @@ function Header() {
         hourCycle: "h23",
         timeZone: "Asia/Ho_Chi_Minh",
     }).format(new Date());
+    const [searchTerm, setSearchTerm] = useState('');
+    const navigate = useNavigate();
+    const handleSearch = (e : React.FormEvent) => {
+        e.preventDefault();
+        navigate(`/tim-kiem?q=${encodeURIComponent(searchTerm.trim())}`);
+    }
 
     return (
         <>
@@ -184,12 +190,14 @@ function Header() {
 
                                 <form
                                     className="search-box"
-                                    onSubmit={(event) => event.preventDefault()}
+                                    onSubmit={handleSearch}
                                 >
                                     <input
                                         type="text"
                                         placeholder="Tìm kiếm..."
                                         aria-label="Nhập nội dung tìm kiếm"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
                                     />
                                     <button type="submit" aria-label="Tìm kiếm">
                                         <svg viewBox="0 0 24 24" aria-hidden="true">
