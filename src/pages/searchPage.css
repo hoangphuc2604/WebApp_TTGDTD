@@ -1,0 +1,216 @@
+/* Tông màu đỏ đặc trưng của Báo Giáo dục & Thời đại */
+.gdtd-color {
+    color: #be1e2d;
+}
+
+.gdtd-btn {
+    background-color: #be1e2d;
+    border-color: #be1e2d;
+    color: #fff;
+}
+
+.gdtd-btn:hover {
+    background-color: #9e1623;
+    border-color: #9e1623;
+    color: #fff;
+}
+
+/* Breadcrumb & Tiêu đề mục */
+.gdtd-breadcrumb {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.gdtd-breadcrumb a {
+    color: #333;
+    text-decoration: none;
+}
+
+.gdtd-breadcrumb a:hover {
+    color: #be1e2d;
+}
+
+.gdtd-section-heading {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #be1e2d;
+    text-transform: uppercase;
+    border-bottom: 2px solid #be1e2d;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+}
+
+/* Khung form lọc tìm kiếm */
+.gdtd-search-box {
+    background-color: #f7f7f7;
+    border: 1px solid #e2e2e2;
+    border-top: 3px solid #be1e2d;
+    padding: 18px;
+    border-radius: 3px;
+}
+
+/* Item bài viết nằm ngang (Thumbnail trái - Nội dung phải) */
+.gdtd-result-item {
+    display: flex;
+    gap: 18px;
+    padding: 18px 0;
+    border-bottom: 1px solid #ebebeb;
+}
+
+.gdtd-result-item:first-child {
+    padding-top: 6px;
+}
+
+.gdtd-result-thumb-wrap {
+    width: 245px;
+    height: 155px;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: 3px;
+    background-color: #f0f0f0;
+}
+
+.gdtd-result-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.25s ease;
+}
+
+.gdtd-result-item:hover .gdtd-result-thumb {
+    transform: scale(1.04);
+}
+
+.gdtd-result-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: #1a1a1a;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.gdtd-result-title:hover {
+    color: #be1e2d;
+}
+
+.gdtd-result-meta {
+    font-size: 0.82rem;
+    color: #777;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.gdtd-result-category {
+    color: #be1e2d;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.gdtd-result-sapo {
+    font-size: 0.93rem;
+    color: #444;
+    line-height: 1.55;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Highlight từ khóa tìm kiếm */
+.gdtd-highlight {
+    background-color: #fff0f1;
+    color: #be1e2d;
+    font-weight: 700;
+    padding: 0 2px;
+}
+
+/* Cột phải: Sidebar Tin đọc nhiều */
+.gdtd-sidebar-box {
+    border: 1px solid #e6e6e6;
+    background-color: #fafafa;
+    padding: 16px;
+    border-radius: 3px;
+}
+
+.gdtd-sidebar-heading {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #be1e2d;
+    text-transform: uppercase;
+    border-bottom: 2px solid #be1e2d;
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+}
+
+.gdtd-most-read-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px dashed #e0e0e0;
+}
+
+.gdtd-most-read-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.gdtd-rank-num {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.82rem;
+    font-weight: 700;
+    border-radius: 2px;
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.gdtd-rank-num.top-3 {
+    background-color: #be1e2d;
+    color: #fff;
+}
+
+.gdtd-most-read-link {
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #222;
+    text-decoration: none;
+}
+
+.gdtd-most-read-link:hover {
+    color: #be1e2d;
+}
+
+/* Phân trang */
+.gdtd-pagination .page-link {
+    color: #be1e2d;
+    border-radius: 2px;
+    margin: 0 3px;
+}
+
+.gdtd-pagination .page-item.active .page-link {
+    background-color: #be1e2d;
+    border-color: #be1e2d;
+    color: #fff;
+}
+
+@media (max-width: 767px) {
+    .gdtd-result-item {
+        flex-direction: column;
+        gap: 12px;
+    }
+    .gdtd-result-thumb-wrap {
+        width: 100%;
+        height: 200px;
+    }
+}

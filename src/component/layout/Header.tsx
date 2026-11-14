@@ -1,4 +1,5 @@
-import { Link, NavLink } from "react-router-dom";
+import {Link, NavLink, useNavigate} from "react-router-dom";
+import React, {useState} from "react";
 import logo from "../../assets/images/logo.svg";
 import logoGDTD from "../../assets/images/gdtd.png";
 import "./Header.css";
@@ -130,6 +131,12 @@ function Header() {
         hourCycle: "h23",
         timeZone: "Asia/Ho_Chi_Minh",
     }).format(new Date());
+    const [searchTerm, setSearchTerm] = useState('');
+    const navigate = useNavigate();
+    const handleSearch = (e : React.FormEvent) => {
+        e.preventDefault();
+        navigate(`/tim-kiem?q=${encodeURIComponent(searchTerm.trim())}`);
+    }
 
     return (
         <>
@@ -165,11 +172,14 @@ function Header() {
                                 <img src={logo} alt="Giáo dục và Thời đại" />
                             </Link>
                             <div className="brand-right">
-                                <form className="search-box" onSubmit={(event) => event.preventDefault()}>
+
+                                <form className="search-box" onSubmit={handleSearch} >
                                     <input
                                         type="text"
                                         placeholder="Tìm kiếm..."
                                         aria-label="Nhập nội dung tìm kiếm"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
                                     />
                                     <button type="submit" aria-label="Tìm kiếm">
                                         {/* Thay icon kính lúp */}

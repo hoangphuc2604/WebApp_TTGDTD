@@ -14,6 +14,8 @@ import ChiTietSanPham from './pages/news-detail';
 import Login from './component/Login';
 import Dashboard from './pages/dashboard-test';
 import HomePage from './pages/HomePage';
+import SearchPage from './pages/searchPage';
+
 import CategoryPage from './pages/CategoryPage';
 interface ProtectedRouteProps {
     children: React.ReactNode;
@@ -64,6 +66,8 @@ const App: React.FC = () => {
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>}/>
 
                 <Route path="*" element={<Navigate to="/" replace />}/>
+              
+                <Route path="/tim-kiem" element={<SearchPage />} />
 
             </Routes>
         </Router>
