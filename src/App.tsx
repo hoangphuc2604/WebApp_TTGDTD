@@ -56,19 +56,12 @@ const App: React.FC = () => {
         <Router>
             <Routes>
                 <Route path="/" element={<HomePage />}/>
-
                 <Route path="/bai-viet/:id" element={<ChiTietSanPham />} />
-
                 <Route path="/login" element={<Login />}/>
-
                 <Route path="/chuyen-muc/:slug" element={<CategoryPage />} />
-
-                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>}/>
-
-                <Route path="*" element={<Navigate to="/" replace />}/>
-              
                 <Route path="/tim-kiem" element={<SearchPage />} />
-
+                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>}/>
+                <Route path="*" element={<Navigate to="/" replace />}/>
             </Routes>
         </Router>
     );
