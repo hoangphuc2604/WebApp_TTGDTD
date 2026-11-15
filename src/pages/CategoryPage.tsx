@@ -7,6 +7,8 @@ import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { fetchNews } from "../store/newsSlice";
 import "./CategoryPage.css";
 
+const fallbackImage = "https://via.placeholder.com/300x200?text=No+Image";
+
 function CategoryPage() {
     const { slug } = useParams<{ slug: string }>();
     const location = useLocation();
@@ -22,32 +24,52 @@ function CategoryPage() {
         }
     }, [dispatch, articles.length]);
 
+    useEffect(() => {
+        setVisibleCount(6);
+        window.scrollTo(0, 0);
+    }, [slug]);
+
     const parentCategory = menuItems.find((item) => {
-        if (item.path.includes(slug || "")) return true;
+        const itemSlug = item.path.split("/").filter(Boolean).pop() || "";
+        if (itemSlug === slug) return true;
         if (item.children) {
-            return item.children.some((child) => child.path.includes(slug || ""));
+            return item.children.some((child) => {
+                const childSlug = child.path.split("/").filter(Boolean).pop() || "";
+                return childSlug === slug;
+            });
         }
         return false;
     });
 
     const categoryName = parentCategory ? parentCategory.label : "Danh mục";
     const subLinks = parentCategory?.children || [];
+    const parentSlug = parentCategory?.path.split("/").filter(Boolean).pop() || "";
 
-    const sortedArticles = [...articles].sort((a, b) => {
+    const currentSlug = slug || "";
+    const currentParentSlug = parentSlug || "";
+
+    const categoryArticles = articles.filter((article) => {
+        if (!currentSlug) return true;
+        const articleCategory = (article.category || "").trim();
+        return (
+            articleCategory === currentSlug ||
+            (currentParentSlug !== "" && articleCategory === currentParentSlug)
+        );
+    });
+
+    const sortedArticles = [...categoryArticles].sort((a, b) => {
         const dateA = new Date(a.date).getTime();
         const dateB = new Date(b.date).getTime();
         if (isNaN(dateA) || isNaN(dateB)) return 0;
         return dateB - dateA;
     });
 
-    const validArticles = sortedArticles.filter((_, index) => index % 3 === 0);
-
-    const displayedArticles = validArticles.slice(0, visibleCount);
+    const displayedArticles = sortedArticles.slice(0, visibleCount);
 
     const featuredArticle = displayedArticles[0];
     const listArticles = displayedArticles.slice(1);
-    const highlightArticles = validArticles.slice(0, 3);
-    const featuredSidebarArticles = validArticles.slice(3, 6);
+    const highlightArticles = sortedArticles.slice(0, 3);
+    const featuredSidebarArticles = sortedArticles.slice(3, 6);
 
     const scrollTags = (direction: number) => {
         if (scrollRef.current) {
@@ -59,6 +81,12 @@ function CategoryPage() {
         <>
             <Header />
             <main className="container category-page">
+                <div className="category-breadcrumb">
+                    <Link to="/">Trang chủ</Link>
+                    <span className="mx-2">/</span>
+                    <span className="text-muted">{categoryName}</span>
+                </div>
+
                 <div className="category-events">
                     <i className="fa-solid fa-bolt event-icon"></i>
                     <span className="event-title">Sự kiện</span>
@@ -94,13 +122,22 @@ function CategoryPage() {
                     <h4 className="text-center mt-5" style={{ color: "red" }}>
                         Đang tải bài viết...
                     </h4>
+                ) : sortedArticles.length === 0 ? (
+                    <div className="empty-state">
+                        <i className="fa-regular fa-folder-open"></i>
+                        <h4>Chuyên mục này chưa có bài viết nào.</h4>
+                    </div>
                 ) : (
                     <div className="category-content">
                         <div className="category-main">
                             {featuredArticle && (
                                 <article className="featured-article">
                                     <Link to={`/bai-viet/${featuredArticle.id}`}>
-                                        <img src={featuredArticle.thumbnail} alt={featuredArticle.title} />
+                                        <img
+                                            src={featuredArticle.thumbnail}
+                                            alt={featuredArticle.title}
+                                            onError={(e) => { (e.target as HTMLImageElement).src = fallbackImage; }}
+                                        />
                                     </Link>
                                     <h2 className="featured-title">
                                         <Link to={`/bai-viet/${featuredArticle.id}`}>
@@ -118,7 +155,11 @@ function CategoryPage() {
                                 {listArticles.map((article) => (
                                     <article key={article.id} className="list-item">
                                         <Link to={`/bai-viet/${article.id}`} className="list-thumb">
-                                            <img src={article.thumbnail} alt={article.title} />
+                                            <img
+                                                src={article.thumbnail}
+                                                alt={article.title}
+                                                onError={(e) => { (e.target as HTMLImageElement).src = fallbackImage; }}
+                                            />
                                         </Link>
                                         <div className="list-info">
                                             <h3>
@@ -131,7 +172,7 @@ function CategoryPage() {
                                 ))}
                             </div>
 
-                            {visibleCount < validArticles.length && (
+                            {visibleCount < sortedArticles.length && (
                                 <div className="text-center mt-4 mb-5">
                                     <button
                                         className="btn-load-more"
@@ -149,7 +190,11 @@ function CategoryPage() {
                                 {highlightArticles.map((article) => (
                                     <article key={article.id} className="sidebar-item">
                                         <Link to={`/bai-viet/${article.id}`}>
-                                            <img src={article.thumbnail} alt={article.title} />
+                                            <img
+                                                src={article.thumbnail}
+                                                alt={article.title}
+                                                onError={(e) => { (e.target as HTMLImageElement).src = fallbackImage; }}
+                                            />
                                         </Link>
                                         <h4>
                                             <Link to={`/bai-viet/${article.id}`}>{article.title}</Link>
@@ -163,7 +208,11 @@ function CategoryPage() {
                                 {featuredSidebarArticles.map((article) => (
                                     <article key={article.id} className="sidebar-item">
                                         <Link to={`/bai-viet/${article.id}`}>
-                                            <img src={article.thumbnail} alt={article.title} />
+                                            <img
+                                                src={article.thumbnail}
+                                                alt={article.title}
+                                                onError={(e) => { (e.target as HTMLImageElement).src = fallbackImage; }}
+                                            />
                                         </Link>
                                         <h4>
                                             <Link to={`/bai-viet/${article.id}`}>{article.title}</Link>
