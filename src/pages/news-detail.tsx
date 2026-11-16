@@ -19,6 +19,18 @@ function ArticlePage() {
 
     const article = articles.find((a) => a.id === id);
 
+    let finalContent = "";
+    if (article && article.content){
+        finalContent = article.content;
+        if (finalContent.includes("<ul")){
+            finalContent = finalContent.replace(
+                "<ul",
+                '<div class="box-tin-lien-quan"><div class="title-tin-lien-quan">TIN LIÊN QUAN</div><ul',
+            );
+            finalContent = finalContent.replace("</ul>", "</ul></div>")
+        }
+    }
+
     if (loading && articles.length === 0) {
         return (
             <>
@@ -71,14 +83,10 @@ function ArticlePage() {
                                 {new Date(article.date).toLocaleDateString("vi-VN")}
                             </p>
 
-                            <img
-                                src={article.thumbnail}
-                                alt={article.title}
-                                className="article-detail-thumbnail"
-                            />
-
                             <div className="article-detail-body">
-                                {article.description ? (
+                                {article.content ? (
+                                    <div dangerouslySetInnerHTML={{ __html: finalContent }}/>
+                                ) : article.description ? (
                                     <p>{article.description}</p>
                                 ) : (
                                     <p className="text-muted">
