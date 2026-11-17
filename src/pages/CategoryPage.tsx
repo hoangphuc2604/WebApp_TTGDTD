@@ -1,21 +1,25 @@
-import { useParams, useLocation, Link } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { useLocation, Link, useSearchParams } from "react-router-dom";
+import { useEffect, useRef } from "react";
 import Header from "../component/layout/Header";
 import Footer from "../component/layout/Footer";
-import { menuItems } from "../component/layout/Header";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { fetchNews } from "../store/newsSlice";
+import { useCategoryData } from "../hooks/useCategoryData";
 import "./CategoryPage.css";
 
 const fallbackImage = "https://via.placeholder.com/300x200?text=No+Image";
 
 function CategoryPage() {
-    const { slug } = useParams<{ slug: string }>();
     const location = useLocation();
     const dispatch = useAppDispatch();
-    const { articles, loading } = useAppSelector((state) => state.news);
+    const { loading, articles } = useAppSelector((state) => state.news);
 
-    const [visibleCount, setVisibleCount] = useState(6);
+    const { currentSlug, categoryName, subLinks, sortedArticles } = useCategoryData();
+
+    const [searchParams, setSearchParams] = useSearchParams();
+    const limitParam = Number(searchParams.get("limit")) || 6;
+    const visibleCount = limitParam;
+
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -25,51 +29,18 @@ function CategoryPage() {
     }, [dispatch, articles.length]);
 
     useEffect(() => {
-        setVisibleCount(6);
         window.scrollTo(0, 0);
-    }, [slug]);
-
-    const parentCategory = menuItems.find((item) => {
-        const itemSlug = item.path.split("/").filter(Boolean).pop() || "";
-        if (itemSlug === slug) return true;
-        if (item.children) {
-            return item.children.some((child) => {
-                const childSlug = child.path.split("/").filter(Boolean).pop() || "";
-                return childSlug === slug;
-            });
-        }
-        return false;
-    });
-
-    const categoryName = parentCategory ? parentCategory.label : "Danh mục";
-    const subLinks = parentCategory?.children || [];
-    const parentSlug = parentCategory?.path.split("/").filter(Boolean).pop() || "";
-
-    const currentSlug = slug || "";
-    const currentParentSlug = parentSlug || "";
-
-    const categoryArticles = articles.filter((article) => {
-        if (!currentSlug) return true;
-        const articleCategory = (article.category || "").trim();
-        return (
-            articleCategory === currentSlug ||
-            (currentParentSlug !== "" && articleCategory === currentParentSlug)
-        );
-    });
-
-    const sortedArticles = [...categoryArticles].sort((a, b) => {
-        const dateA = new Date(a.date).getTime();
-        const dateB = new Date(b.date).getTime();
-        if (isNaN(dateA) || isNaN(dateB)) return 0;
-        return dateB - dateA;
-    });
+    }, [currentSlug]);
 
     const displayedArticles = sortedArticles.slice(0, visibleCount);
-
     const featuredArticle = displayedArticles[0];
     const listArticles = displayedArticles.slice(1);
     const highlightArticles = sortedArticles.slice(0, 3);
     const featuredSidebarArticles = sortedArticles.slice(3, 6);
+
+    const handleLoadMore = () => {
+        setSearchParams({ limit: (visibleCount + 5).toString() });
+    };
 
     const scrollTags = (direction: number) => {
         if (scrollRef.current) {
@@ -126,6 +97,7 @@ function CategoryPage() {
                     <div className="empty-state">
                         <i className="fa-regular fa-folder-open"></i>
                         <h4>Chuyên mục này chưa có bài viết nào.</h4>
+                        <p>Vui lòng quay lại sau hoặc khám phá các chuyên mục khác.</p>
                     </div>
                 ) : (
                     <div className="category-content">
@@ -174,10 +146,7 @@ function CategoryPage() {
 
                             {visibleCount < sortedArticles.length && (
                                 <div className="text-center mt-4 mb-5">
-                                    <button
-                                        className="btn-load-more"
-                                        onClick={() => setVisibleCount(prev => prev + 5)}
-                                    >
+                                    <button className="btn-load-more" onClick={handleLoadMore}>
                                         Xem thêm
                                     </button>
                                 </div>
