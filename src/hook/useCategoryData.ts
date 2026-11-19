@@ -32,6 +32,8 @@ export function useCategoryData() {
             parentCategory?.label ||
             (currentSlug === "tin-moi-nhat" ? "Tin mới nhất" : "Danh mục");
 
+        const parentLabel = exactSubLink && parentCategory ? parentCategory.label : "";
+
         const subLinks = parentCategory?.children || [];
         const parentSlug = parentCategory?.path.split("/").filter(Boolean).pop() || "";
 
@@ -62,15 +64,13 @@ export function useCategoryData() {
         }
 
         const sortedArticles = [...filteredArticles].sort((a, b) => {
-            const dateA = new Date(a.date).getTime();
-            const dateB = new Date(b.date).getTime();
-            if (isNaN(dateA) || isNaN(dateB)) return 0;
-            return dateB - dateA;
+            return new Date(b.date).getTime() - new Date(a.date).getTime();
         });
 
         return {
             currentSlug,
             categoryName,
+            parentLabel,
             subLinks,
             sortedArticles,
         };

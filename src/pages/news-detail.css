@@ -134,3 +134,62 @@
 .box-tin-lien-quan ul li a:hover{
     color: red;
 }
+.article-detail-body h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 24px 0 12px;
+    color: #222;
+    line-height: 1.4;
+}
+
+.article-detail-body h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 20px 0 10px;
+    color: #222;
+    line-height: 1.4;
+}
+
+.article-detail-body ul,
+.article-detail-body ol {
+    padding-left: 24px;
+    margin-bottom: 15px;
+}
+
+.article-detail-body li {
+    margin-bottom: 8px;
+    line-height: 1.7;
+}
+
+.article-detail-body blockquote {
+    border-left: 4px solid #c31e40;
+    padding: 10px 16px;
+    margin: 16px 0;
+    background: #fafafa;
+    font-style: italic;
+    color: #555;
+}
+
+.article-detail-body a {
+    color: #c31e40;
+    text-decoration: none;
+}
+
+.article-detail-body a:hover {
+    text-decoration: underline;
+}
+
+.article-detail-body figure {
+    margin: 16px 0;
+}
+
+.article-detail-body figcaption {
+    font-size: 13px;
+    color: #777;
+    text-align: center;
+    margin-top: 6px;
+    font-style: italic;
+}
+.article-detail-body img:first-of-type {
+    display: none;
+}
