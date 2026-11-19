@@ -6,6 +6,8 @@ import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { fetchNews } from "../store/newsSlice";
 import "./news-detail.css";
 
+const fallbackImage = "https://via.placeholder.com/300x200?text=No+Image";
+
 function ArticlePage() {
     const { id } = useParams<{ id: string }>();
     const dispatch = useAppDispatch();
@@ -17,28 +19,18 @@ function ArticlePage() {
         }
     }, [dispatch, articles.length]);
 
-    const article = articles.find((a) => a.id === id);
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [id]);
 
-    let finalContent = "";
-    if (article && article.content){
-        finalContent = article.content;
-        if (finalContent.includes("<ul")){
-            finalContent = finalContent.replace(
-                "<ul",
-                '<div class="box-tin-lien-quan"><div class="title-tin-lien-quan">TIN LIÊN QUAN</div><ul',
-            );
-            finalContent = finalContent.replace("</ul>", "</ul></div>")
-        }
-    }
+    const article = articles.find((a) => a.id === id);
 
     if (loading && articles.length === 0) {
         return (
             <>
                 <Header />
                 <main className="container mt-4 mb-5" style={{ minHeight: "60vh" }}>
-                    <h4 className="text-center mt-5" style={{ color: "red" }}>
-                        Đang tải bài viết...
-                    </h4>
+                    <h3 className="text-center">Đang tải bài viết...</h3>
                 </main>
                 <Footer />
             </>
@@ -60,7 +52,14 @@ function ArticlePage() {
         );
     }
 
-    const related = articles.filter((a) => a.id !== article.id).slice(0, 4);
+    const related = articles
+        .filter((a) => a.category === article.category && a.id !== article.id)
+        .slice(0, 4);
+
+    const bodyHtml =
+        article.content && article.content.trim().length > 0
+            ? article.content
+            : `<p>${article.description || "Nội dung bài viết đang được cập nhật."}</p>`;
 
     return (
         <>
@@ -83,18 +82,19 @@ function ArticlePage() {
                                 {new Date(article.date).toLocaleDateString("vi-VN")}
                             </p>
 
-                            <div className="article-detail-body">
-                                {article.content ? (
-                                    <div dangerouslySetInnerHTML={{ __html: finalContent }}/>
-                                ) : article.description ? (
-                                    <p>{article.description}</p>
-                                ) : (
-                                    <p className="text-muted">
-                                        Nội dung bài viết đang được cập nhật.
-                                        Vui lòng đọc bài gốc bên dưới.
-                                    </p>
-                                )}
-                            </div>
+                            <img
+                                src={article.thumbnail}
+                                alt={article.title}
+                                className="article-detail-thumbnail"
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).src = fallbackImage;
+                                }}
+                            />
+
+                            <div
+                                className="article-detail-body"
+                                dangerouslySetInnerHTML={{ __html: bodyHtml }}
+                            />
 
                             {article.link && (
                                 <a
@@ -122,6 +122,9 @@ function ArticlePage() {
                                         src={r.thumbnail}
                                         alt={r.title}
                                         className="article-related-thumb"
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).src = fallbackImage;
+                                        }}
                                     />
                                     <span>{r.title}</span>
                                 </Link>

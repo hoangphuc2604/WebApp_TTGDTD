@@ -4,7 +4,7 @@ import Header from "../component/layout/Header";
 import Footer from "../component/layout/Footer";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { fetchNews } from "../store/newsSlice";
-import { useCategoryData } from "../hooks/useCategoryData";
+import { useCategoryData } from "../hook/useCategoryData";
 import "./CategoryPage.css";
 
 const fallbackImage = "https://via.placeholder.com/300x200?text=No+Image";
@@ -14,11 +14,12 @@ function CategoryPage() {
     const dispatch = useAppDispatch();
     const { loading, articles } = useAppSelector((state) => state.news);
 
-    const { currentSlug, categoryName, subLinks, sortedArticles } = useCategoryData();
-
     const [searchParams, setSearchParams] = useSearchParams();
     const limitParam = Number(searchParams.get("limit")) || 6;
     const visibleCount = limitParam;
+
+    const { currentSlug, categoryName, parentLabel, subLinks, sortedArticles } =
+        useCategoryData();
 
     const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -31,6 +32,10 @@ function CategoryPage() {
     useEffect(() => {
         window.scrollTo(0, 0);
     }, [currentSlug]);
+
+    useEffect(() => {
+        document.title = `${categoryName} - Báo Giáo dục & Thời đại`;
+    }, [categoryName]);
 
     const displayedArticles = sortedArticles.slice(0, visibleCount);
     const featuredArticle = displayedArticles[0];
@@ -55,7 +60,15 @@ function CategoryPage() {
                 <div className="category-breadcrumb">
                     <Link to="/">Trang chủ</Link>
                     <span className="mx-2">/</span>
-                    <span className="text-muted">{categoryName}</span>
+                    {parentLabel ? (
+                        <>
+                            <span className="text-muted">{parentLabel}</span>
+                            <span className="mx-2">/</span>
+                            <span className="text-muted">{categoryName}</span>
+                        </>
+                    ) : (
+                        <span className="text-muted">{categoryName}</span>
+                    )}
                 </div>
 
                 <div className="category-events">
