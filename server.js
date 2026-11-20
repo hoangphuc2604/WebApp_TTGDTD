@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import Parser from 'rss-parser';
+import axios from 'axios';
+import * as cheerio from 'cheerio';
 
 const app = express();
 app.use(cors());
@@ -129,6 +131,40 @@ app.get('/api/news', async (req, res) => {
     } catch (err) {
         console.error('[API ERROR]', err);
         res.status(500).json({ message: 'Lỗi server', error: err.message });
+    }
+});
+
+app.get('/api/news/detail', async (req, res) => {
+    const articleUrl = req.query.url;
+    if (!articleUrl) {
+        return res.status(400).json({ message: 'Thiếu đường link bài viết' });
+    }
+    try {
+        const response = await axios.get(articleUrl, {
+            headers: {'User-Agent': USER_AGENT}
+        });
+        const $ = cheerio.load(response.data);
+        $('script, style, iframe, .box-related, .relate-news, .author-info').remove();
+        $('.article__body img, .detail-content img, .story__content img').each((i, el) => {
+            let src = $(el).attr('data-src') || $(el).attr('src');
+            if (src && src.startsWith('/')) {
+                src = 'https://giaoducthoidai.vn' + src;
+            }
+            if (src){
+                $(el).attr('src', src);
+                $(el).removeAttr('data-src');
+                $(el).removeAttr('loading');
+                $(el).removeClass('lazy');
+            }
+        });
+        const contentHtml = $('.article__body, .detail-content, .story__content').html();
+        if (!contentHtml) {
+            return res.status(404).json({message: 'Không cào được nội dung'});
+        }
+        res.status(200).json({fullContent: contentHtml});
+    } catch (err) {
+        console.error('Lỗi chi tiết: ', err.message);
+        res.status(500).json({message: 'Lỗi server khi cào bài báo', error: err.message});
     }
 });
 

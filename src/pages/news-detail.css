@@ -100,40 +100,6 @@
     text-align: justify;
 }
 
-.box-tin-lien-quan{
-    border: 1px solid white;
-    padding: 20px;
-    margin: 25px 0;
-    background-color: white;
-}
-
-.title-tin-lien-quan{
-    color: red;
-    font-weight: bold;
-    font-size: 25px;
-    margin-bottom: 15px;
-}
-
-.box-tin-lien-quan ul{
-    padding-left: 20px;
-    margin-bottom: 0;
-}
-
-.box-tin-lien-quan ul li{
-    margin-bottom: 12px;
-    color: gray;
-}
-
-.box-tin-lien-quan ul li a{
-    color: black;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 15px;
-}
-
-.box-tin-lien-quan ul li a:hover{
-    color: red;
-}
 .article-detail-body h2 {
     font-size: 20px;
     font-weight: 700;
@@ -189,7 +155,4 @@
     text-align: center;
     margin-top: 6px;
     font-style: italic;
-}
-.article-detail-body img:first-of-type {
-    display: none;
 }

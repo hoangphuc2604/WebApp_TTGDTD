@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Header from "../component/layout/Header";
 import Footer from "../component/layout/Footer";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
@@ -12,6 +12,8 @@ function ArticlePage() {
     const { id } = useParams<{ id: string }>();
     const dispatch = useAppDispatch();
     const { articles, loading } = useAppSelector((state) => state.news);
+    const [fullHtml, setFullHtml] = useState<string>("");
+    const [isFetchingFull, setIsFetchingFull] = useState(false);
 
     useEffect(() => {
         if (articles.length === 0) {
@@ -24,6 +26,21 @@ function ArticlePage() {
     }, [id]);
 
     const article = articles.find((a) => a.id === id);
+
+    useEffect(() => {
+        if (article && article.link){
+            setIsFetchingFull(true);
+            fetch(`http://localhost:5000/api/news/detail?url=${encodeURIComponent(article.link)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.fullContent){
+                        setFullHtml(data.fullContent);
+                    }
+                    setIsFetchingFull(false);
+                })
+                .catch(() => setIsFetchingFull(false));
+        }
+    }, [article]);
 
     if (loading && articles.length === 0) {
         return (
@@ -57,9 +74,8 @@ function ArticlePage() {
         .slice(0, 4);
 
     const bodyHtml =
-        article.content && article.content.trim().length > 0
-            ? article.content
-            : `<p>${article.description || "Nội dung bài viết đang được cập nhật."}</p>`;
+            fullHtml || article.content
+            || `<p>${article.description || "Nội dung bài viết đang được cập nhật."}</p>`;
 
     return (
         <>
@@ -91,20 +107,13 @@ function ArticlePage() {
                                 }}
                             />
 
-                            <div
-                                className="article-detail-body"
-                                dangerouslySetInnerHTML={{ __html: bodyHtml }}
-                            />
-
-                            {article.link && (
-                                <a
-                                    href={article.link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="btn btn-danger mt-3"
-                                >
-                                    Đọc bài gốc trên giaoducthoidai.vn →
-                                </a>
+                            {isFetchingFull ? (
+                                <p className="text-center text-muted my-4">Đang tải nội dung toàn bộ bài báo...</p>
+                            ) : (
+                                <div
+                                    className="article-detail-body"
+                                    dangerouslySetInnerHTML={{ __html: bodyHtml }}
+                                />
                             )}
                         </article>
                     </div>
