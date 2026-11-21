@@ -27,6 +27,8 @@ const RSS_FEEDS = [
     { url: 'https://giaoducthoidai.vn/rss/van-hoa.rss', category: 'van-hoa' },
     { url: 'https://giaoducthoidai.vn/rss/the-thao.rss', category: 'the-thao' },
 ];
+let trendingCache = {data : null, updateAt: 0};
+const CACHE_TTL = 15*60*1000;
 
 async function fetchAndParseRss(feed) {
     const response = await fetch(feed.url, {
@@ -175,6 +177,38 @@ app.get('/api/news/detail', async (req, res) => {
         res.status(500).json({message: 'Lỗi server khi cào bài báo', error: err.message});
     }
 });
+app.get('/api/trending', async (req, res) => {
+    const fallbackTopics = [
+        'Xây dựng Luật Nhà giáo',
+        'Đưa nghị quyết Đại hội XIV vào cuộc sống',
+        'Chuyển đổi số trong giáo dục',
+        'Tuyển sinh Đại học 2026'
+    ];
+    if(trendingCache.data && Date.now() - trendingCache.updateAt < CACHE_TTL) {
+        return res.status(200).json(trendingCache.data);
+    }
+    try {
+        const response = await axios.get('https://giaoducthoidai.vn/',{
+            headers: {'User-Agent': USER_AGENT},
+            timeout: 10000
+        });
+        const $ = cheerio.load(response.data);
+        const topicsSet = new Set();
+        $('a[href*="/chu-de/"],a[href*="/su-kien/"], .box-event a, .event-list a, .trending a').each((_, el) => {
+            const text = $(el).text().trim().replace(/^#/,'').replace(/\s+/g,' ');
+            if(text.length>=8 && text.length<=70){
+                topicsSet.add(text);
+            }
+        })
+        const topics = Array.from(topicsSet).slice(0,6);
+        const results = topics.length>0 ? topics : fallbackTopics;
+        trendingCache =  {data: results, updateAt: Date.now()};
+        res.status(200).json(results);
+    } catch (err) {
+        console.error('Lỗi lấy trending topics:', err.message);
+        res.status(200).json(trendingCache.data|| fallbackTopics);
+    }
+})
 
 app.listen(5000, () => {
     console.log('API RSS Server đang chạy tại http://localhost:5000');

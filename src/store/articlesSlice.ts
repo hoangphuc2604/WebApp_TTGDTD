@@ -17,8 +17,19 @@ const initialState: SearchResult = {
 function filterArticle(articles: Article[], keywords: string, category: string, sortBy: SortOrder) {
     const cleanKeywords = keywords.trim().toLowerCase();
     const cleanCategory = category.trim().toLowerCase();
+    const words = cleanKeywords.split(/\s+/).filter(word => word.length > 1);
     const filter = articles.filter(article => {
-        const matchKeywords = !cleanKeywords||article.title.toLowerCase().includes(cleanKeywords)||article.description.toLowerCase().includes(cleanKeywords);
+        const content = `${article.title || ''} ${article.description || ''}`.toLowerCase();
+
+        let matchKeywords = true;
+        if (words.length > 0) {
+            if (words.length <= 3) {
+                matchKeywords = words.every((word) => content.includes(word));
+            } else {
+                const matchedCount = words.filter((word) => content.includes(word)).length;
+                matchKeywords = matchedCount >= Math.ceil(words.length / 2);
+            }
+        }
         const matchCategory = cleanCategory === 'all'|| (article.category||'').toLowerCase() === cleanCategory;
         return matchKeywords && matchCategory;
     });

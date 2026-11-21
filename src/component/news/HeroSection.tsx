@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import {Link} from "react-router-dom";
 import type {Article} from "../../api/articleAPI";
 import "./HeroSection.css";
@@ -28,6 +28,17 @@ function formatRealtime(date:string) {
     return `${diffDays} ngày trước`;
 }
 function HeroSection ({articles}: HeroSectionProps) {
+    const [trendingTopics, setTrendingTopics] = useState<string[]>(Trending_Topics);
+    useEffect(() => {
+        fetch("http://localhost:5000/api/trending")
+            .then((res) => res.json())
+            .then((data) =>{
+                if(Array.isArray(data) && data.length > 0){
+                    setTrendingTopics(data);
+                }
+            })
+            .catch((err) => console.error(" Lỗi tải trending", err));
+    }, []);
     if(articles.length === 0) {
         return null;
     }
@@ -38,11 +49,14 @@ function HeroSection ({articles}: HeroSectionProps) {
             <div className="gdtd-event-bar">
                 <span className="gdtd-event-label">⚡ Sự kiện</span>
                 <div className="gdtd-event-tags">
-                    {Trending_Topics.map((topic,index) => (
-                        <Link key={index} to={`/tim-kiem?q=${encodeURIComponent(topic)}`} className="gdtd-tag">
-                            #{topic}
-                        </Link>
-                    ))}
+                    {trendingTopics.map((topic,index) => {
+                        const cleanTopic = topic.replace(/^#+\s*/, '');
+                        return (
+                            <Link key={index} to={`/tim-kiem?q=${encodeURIComponent(topic)}`} className="gdtd-tag">
+                                #{topic}
+                            </Link>
+                        );
+                    })}
                 </div>
             </div>
             <div className="gdtd-hero-top">
