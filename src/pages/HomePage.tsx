@@ -6,6 +6,8 @@ import {useEffect} from "react";
 import {useAppDispatch, useAppSelector} from "../store/hooks";
 import {fetchNews} from "../store/newsSlice";
 import './HomePage.css';
+import HeroSection from "../component/news/HeroSection";
+import {it} from "node:test";
 
 const GROUPS =[
     {
@@ -31,7 +33,8 @@ function HomePage() {
     useEffect(() =>{
         dispatch(fetchNews());
     }, [dispatch]);
-    const groups = chunk(articles, 5);
+    const heroArticle = articles.slice(0,5);
+    const groups = chunk(articles.slice(5), 5);
 
     return (
         <>
@@ -42,17 +45,30 @@ function HomePage() {
                         Đang tải tin tức mới...
                     </h4>
                 ) : (
-                    groups.map((group, i) => {
-                        const config = GROUPS[i] ?? {};
-                        return (
-                            <NewsGroup
-                                key={i}
-                                articles={group}
-                                heading={config.heading}
-                                subLinks={config.subLinks}
-                            />
-                        );
-                    })
+                    <>
+                        <HeroSection articles={heroArticle} />
+                        {groups.slice(0,GROUPS.length).map((item, index) => {
+                            const config = GROUPS[index]??{};
+                            return (
+                                <NewsGroup
+                                    key={index}
+                                    articles={item}
+                                    heading={config.heading}
+                                    subLinks={config.subLinks} />
+                            )
+                        })}
+                    </>
+                    // groups.map((group, i) => {
+                    //     const config = GROUPS[i] ?? {};
+                    //     return (
+                    //         <NewsGroup
+                    //             key={i}
+                    //             articles={group}
+                    //             heading={config.heading}
+                    //             subLinks={config.subLinks}
+                    //         />
+                    //     );
+                    // })
                 )}
             </main>
             <Footer />

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import type { Article } from "../../api/articleAPI";
 import "./NewsGroup.css";
+import React from "react";
 
 interface NewsGroupProps {
     articles: Article[];
