@@ -112,13 +112,21 @@ app.get('/api/news', async (req, res) => {
         });
 
         const results = await Promise.all(fetchPromises);
-        let allArticles = [];
-        results.forEach((items) => {
-            allArticles = [...allArticles, ...items];
-        });
+        const map = new Map();
+        results.flat().forEach((article) => {
+            const key = (article.link||article.title).trim();
+            const existing = map.get(key);
+            if (!existing||(existing.category === 'tin-moi-nhat' && article.category !== 'tin-moi-nhat')) {
+                map.set(key, article);
+            }
+        })
+        // let allArticles = [];
+        // results.forEach((items) => {
+        //     allArticles = [...allArticles, ...items];
+        // });
 
-        allArticles.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
+        // allArticles.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        const allArticles = Array.from(map.values()).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
         if (debug) {
             return res.status(200).json({
                 total: allArticles.length,
