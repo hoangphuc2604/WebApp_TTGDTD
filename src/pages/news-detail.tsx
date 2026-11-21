@@ -4,6 +4,7 @@ import Header from "../component/layout/Header";
 import Footer from "../component/layout/Footer";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { fetchNews } from "../store/newsSlice";
+import { menuItems } from "../component/layout/Header";
 import "./news-detail.css";
 
 const fallbackImage = "https://via.placeholder.com/300x200?text=No+Image";
@@ -12,8 +13,10 @@ function ArticlePage() {
     const { id } = useParams<{ id: string }>();
     const dispatch = useAppDispatch();
     const { articles, loading } = useAppSelector((state) => state.news);
+
     const [fullHtml, setFullHtml] = useState<string>("");
     const [isFetchingFull, setIsFetchingFull] = useState(false);
+    const [commentText, setCommentText] = useState("");
 
     useEffect(() => {
         if (articles.length === 0) {
@@ -60,42 +63,72 @@ function ArticlePage() {
                 <Header />
                 <main className="container mt-4 mb-5" style={{ minHeight: "60vh" }}>
                     <h3 className="mb-3">Không tìm thấy bài viết</h3>
-                    <Link to="/" className="btn btn-danger">
-                        ← Về trang chủ
-                    </Link>
+                    <Link to="/" className="btn btn-danger">← Về trang chủ</Link>
                 </main>
                 <Footer />
             </>
         );
     }
 
+    const parentCategory = menuItems.find((item) => item.path.includes(article.category || ""));
+    const categoryName = parentCategory ? parentCategory.label : "GIÁO DỤC";
+    const subLinks = parentCategory?.children || [];
+
     const related = articles
         .filter((a) => a.category === article.category && a.id !== article.id)
         .slice(0, 4);
 
+    const sameCategoryArticles = articles
+        .filter((a) => a.category === article.category && a.id !== article.id)
+        .slice(4, 10);
+
+    const dontMissArticles = articles
+        .filter((a) => a.id !== article.id)
+        .slice(10, 14);
+
     const bodyHtml =
-            fullHtml || article.content
-            || `<p>${article.description || "Nội dung bài viết đang được cập nhật."}</p>`;
+        fullHtml || article.content
+        || `<p>${article.description || "Nội dung bài viết đang được cập nhật."}</p>`;
+
+    const handleCommentSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        alert("Tính năng bình luận đang được phát triển!");
+        setCommentText("");
+    };
+
+    const currentUrl = window.location.href;
 
     return (
         <>
             <Header />
             <main className="container mt-4 mb-5 article-detail-page">
-                <nav className="article-detail-breadcrumb">
-                    <Link to="/">Trang chủ</Link>
-                    <span> / </span>
-                    <span>Bài viết</span>
-                </nav>
-
                 <div className="row">
-                    <div className="col-md-8">
+                    <div className="col-lg-9 position-relative">
+                        <div className="floating-social-bar">
+                            <a href={`https://zalo.me/share?u=${currentUrl}`} target="_blank" rel="noreferrer" className="social-btn zalo">Zalo</a>
+                            <a href={`https://www.facebook.com/sharer/sharer.php?u=${currentUrl}`} target="_blank" rel="noreferrer" className="social-btn"><i className="fa-brands fa-facebook-f"></i></a>
+                            <button onClick={() => window.print()} className="social-btn"><i className="fa-solid fa-print"></i></button>
+                        </div>
+
+                        <div className="article-category-header">
+                            <h2 className="cat-title">{categoryName}</h2>
+                            <div className="cat-sublinks">
+                                {subLinks.map(sub => (
+                                    <Link key={sub.path} to={sub.path}>{sub.label}</Link>
+                                ))}
+                            </div>
+                        </div>
+
                         <article>
                             <h1 className="article-detail-title">{article.title}</h1>
 
-                            <p className="article-detail-meta">
-                                Tác giả: {article.author || "Ban Biên tập"}
-                                {" • "}
-                                {new Date(article.date).toLocaleDateString("vi-VN")}
+                            <div className="article-meta-wrapper">
+                                <span className="author">{article.author || "Hà Nguyễn"}</span>
+                                <span className="date">{new Date(article.date).toLocaleDateString("vi-VN")} (GMT+7)</span>
+                            </div>
+
+                            <p className="article-sapo">
+                                {article.description || "Nội dung bài viết đang được cập nhật."}
                             </p>
 
                             <img
@@ -115,30 +148,98 @@ function ArticlePage() {
                                     dangerouslySetInnerHTML={{ __html: bodyHtml }}
                                 />
                             )}
-                        </article>
-                    </div>
 
-                    <div className="col-md-4">
-                        <aside className="article-related-sidebar">
-                            <h4>Tin liên quan</h4>
-                            {related.map((r) => (
-                                <Link
-                                    to={`/bai-viet/${r.id}`}
-                                    key={r.id}
-                                    className="article-related-item"
-                                >
-                                    <img
-                                        src={r.thumbnail}
-                                        alt={r.title}
-                                        className="article-related-thumb"
-                                        onError={(e) => {
-                                            (e.target as HTMLImageElement).src = fallbackImage;
-                                        }}
-                                    />
-                                    <span>{r.title}</span>
+                            <div className="article-tags mt-4 mb-5">
+                                <Link to={`/chuyen-muc/${article.category}`} className="tag-item">
+                                    {article.category || "Giáo dục"}
                                 </Link>
-                            ))}
-                        </aside>
+                                <span className="tag-item">Tin tức</span>
+                                <span className="tag-item">Sự kiện</span>
+                            </div>
+
+                            {related.length > 0 && (
+                                <div className="box-tin-lien-quan mb-5">
+                                    <h4 className="title-tin-lien-quan">TIN LIÊN QUAN</h4>
+                                    <ul>
+                                        {related.map((r) => (
+                                            <li key={r.id}>
+                                                <Link to={`/bai-viet/${r.id}`}>{r.title}</Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            <div className="comment-section mb-5">
+                                <h4 className="comment-title">Bình luận</h4>
+                                <form onSubmit={handleCommentSubmit}>
+                                    <textarea
+                                        className="form-control comment-input"
+                                        rows={3}
+                                        placeholder="* Ý kiến của bạn sẽ được biên tập trước khi đăng. Xin vui lòng gõ Tiếng Việt có dấu."
+                                        value={commentText}
+                                        onChange={(e) => setCommentText(e.target.value)}
+                                    ></textarea>
+                                    <div className="text-end mt-2">
+                                        <button type="submit" className="btn btn-danger">Gửi bình luận</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            {sameCategoryArticles.length > 0 && (
+                                <div className="box-cung-chuyen-muc mb-5">
+                                    <div className="cung-chuyen-muc-header">
+                                        <h4>CÙNG CHUYÊN MỤC</h4>
+                                        <div className="slider-dots">
+                                            <span className="dot active"></span>
+                                            <span className="dot"></span>
+                                            <span className="dot"></span>
+                                        </div>
+                                    </div>
+                                    <div className="cung-chuyen-muc-list">
+                                        {sameCategoryArticles.map((item) => (
+                                            <div key={item.id} className="cung-chuyen-muc-item">
+                                                <Link to={`/bai-viet/${item.id}`}>
+                                                    <img
+                                                        src={item.thumbnail}
+                                                        alt={item.title}
+                                                        onError={(e) => { (e.target as HTMLImageElement).src = fallbackImage; }}
+                                                    />
+                                                    <h5>{item.title}</h5>
+                                                    <span className="time">{new Date(item.date).toLocaleDateString("vi-VN")}</span>
+                                                </Link>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {dontMissArticles.length > 0 && (
+                                <div className="box-dung-bo-lo mb-5">
+                                    <h4 className="title-dung-bo-lo">ĐỪNG BỎ LỠ</h4>
+                                    <div className="dung-bo-lo-list">
+                                        {dontMissArticles.map((item) => (
+                                            <div key={item.id} className="dung-bo-lo-item">
+                                                <Link to={`/bai-viet/${item.id}`} className="dung-bo-lo-thumb">
+                                                    <img
+                                                        src={item.thumbnail}
+                                                        alt={item.title}
+                                                        onError={(e) => { (e.target as HTMLImageElement).src = fallbackImage; }}
+                                                    />
+                                                </Link>
+                                                <div className="dung-bo-lo-info">
+                                                    <h5>
+                                                        <Link to={`/bai-viet/${item.id}`}>{item.title}</Link>
+                                                    </h5>
+                                                    <span className="time">{new Date(item.date).toLocaleDateString("vi-VN")}</span>
+                                                    <p>{item.description}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </article>
                     </div>
                 </div>
             </main>
