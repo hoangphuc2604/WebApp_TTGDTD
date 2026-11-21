@@ -1,5 +1,5 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {Article, articles} from "../api/articleAPI";
+import {Article} from "../api/articleAPI";
 
 export type SortOrder = 'newest'|'oldest';
 interface SearchResult {
@@ -12,9 +12,9 @@ const initialState: SearchResult = {
     keywords:'',
     category:'all',
     sortBy:'newest',
-    results: articles,
+    results: [],
 }
-function filterArticle(keywords: string, category: string, sortBy: SortOrder) {
+function filterArticle(articles: Article[], keywords: string, category: string, sortBy: SortOrder) {
     const cleanKeywords = keywords.trim().toLowerCase();
     const cleanCategory = category.trim().toLowerCase();
     const filter = articles.filter(article => {
@@ -34,7 +34,12 @@ const searchSlice = createSlice({
     reducers:{
         executeSearch: (
             state,
-            action: PayloadAction<{ keywords?: string; category?: string; sortBy?: SortOrder}>
+            action: PayloadAction<{
+                articles: Article[];
+                keywords?: string;
+                category?: string;
+                sortBy?: SortOrder;
+            }>
         ) => {
             if (action.payload.keywords !== undefined) {
                 state.keywords = action.payload.keywords;
@@ -45,12 +50,18 @@ const searchSlice = createSlice({
             if (action.payload.sortBy !== undefined) {
                 state.sortBy = action.payload.sortBy;
             }
+            state.results = filterArticle(
+                action.payload.articles,
+                state.keywords,
+                state.category,
+                state.sortBy
+            );
         },
         resetSearch: (state: SearchResult) => {
             state.keywords = '';
             state.category = 'all';
             state.sortBy = 'newest';
-            state.results = articles;
+            state.results = [];
         }
     }
 })

@@ -7,7 +7,6 @@ import {useAppDispatch, useAppSelector} from "../store/hooks";
 import {fetchNews} from "../store/newsSlice";
 import './HomePage.css';
 import HeroSection from "../component/news/HeroSection";
-import {it} from "node:test";
 
 const GROUPS =[
     {
@@ -58,17 +57,6 @@ function HomePage() {
                             )
                         })}
                     </>
-                    // groups.map((group, i) => {
-                    //     const config = GROUPS[i] ?? {};
-                    //     return (
-                    //         <NewsGroup
-                    //             key={i}
-                    //             articles={group}
-                    //             heading={config.heading}
-                    //             subLinks={config.subLinks}
-                    //         />
-                    //     );
-                    // })
                 )}
             </main>
             <Footer />

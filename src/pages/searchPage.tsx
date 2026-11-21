@@ -1,13 +1,12 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, { useEffect, useMemo, useState} from 'react';
 import {Link, useSearchParams} from 'react-router-dom';
 import Header from '../component/layout/Header';
 import Footer from '../component/layout/Footer';
-import { articles } from '../api/articleAPI';
 import './searchPage.css';
 import {useDispatch, useSelector} from "react-redux";
 import {AppDispatch, RootState} from "../store/store";
 import {executeSearch, SortOrder} from "../store/articlesSlice";
-import {i} from "vite/dist/node/chunks/moduleRunnerTransport";
+import {fetchNews} from "../store/newsSlice";
 
 function formatDate(date: string) {
     if(!date) return '';
@@ -18,7 +17,7 @@ function formatDate(date: string) {
     if(isNaN(parsedDate.getTime())) {
         return date;
     } else {
-        parsedDate.toLocaleDateString('vi-VN');
+        return parsedDate.toLocaleDateString('vi-VN');
     }
 }
 function HighlightText({text,keywords}: {text: string, keywords: string}) {
@@ -50,36 +49,42 @@ function SearchPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const dispatch = useDispatch<AppDispatch>();
     const {results, keywords, category, sortBy} = useSelector((state: RootState) => state.search);
+    const {articles} = useSelector((state:RootState) => state.news);
     const urlKeywords = searchParams.get('q')||'';
     const [inputText, setInputText] = useState(urlKeywords);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 8;
 
+    useEffect(() => {
+        if(articles.length==0){
+            dispatch(fetchNews());
+        }
+    }, [articles.length,dispatch]);
     const availableCategories = useMemo(()=>{
         const set = new Set<string>();
         articles.forEach(article => {
             if(article.category &&  article.category.trim()) set.add(article.category.trim());
         })
         return Array.from(set);
-    },[]);
+    },[articles]);
     useEffect(() => {
         setInputText(urlKeywords);
-        dispatch(executeSearch({keywords: urlKeywords}));
+        dispatch(executeSearch({ articles, keywords: urlKeywords}));
         setCurrentPage(1);
-    }, [urlKeywords, dispatch]);
+    }, [urlKeywords, articles, dispatch]);
     const handleFormSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const text = inputText.trim();
         setSearchParams(text?{q:text}:{});
-        dispatch(executeSearch({keywords: text}));
+        dispatch(executeSearch({ articles,keywords: text}));
         setCurrentPage(1);
     }
     const handleCategoryChange = (newCategory: string) => {
-        dispatch(executeSearch({category: newCategory}));
+        dispatch(executeSearch({articles, category: newCategory}));
         setCurrentPage(1);
     }
     const handleSortChange = (newSort: SortOrder) => {
-        dispatch(executeSearch({sortBy: newSort}));
+        dispatch(executeSearch({articles, sortBy: newSort}));
         setCurrentPage(1);
     }
     const totalPages = Math.ceil(results.length / itemsPerPage);
@@ -145,13 +150,13 @@ function SearchPage() {
                             <div>
                                 {currentItems.map((item) => (
                                     <article key={item.id} className="gdtd-result-item">
-                                        <a href={item.link||'#'} target="_blank" rel="noreferrer" className="gdtd-result-thumb-wrap">
+                                        <Link to={`/bai-viet/${item.id}`} className="gdtd-result-thumb-wrap">
                                             <img src={item.thumbnail} alt={item.title} className="gdtd-result-thumb" />
-                                        </a>
+                                        </Link>
                                         <div className="flex-grow-1">
-                                            <a href={item.link} target="_blank" rel="noreferrer" className="gdtd-result-title">
+                                            <Link to={`/bai-viet/${item.id}`} className="gdtd-result-title">
                                                 <HighlightText text={item.title} keywords={keywords} />
-                                            </a>
+                                            </Link>
                                             <div className="gdtd-result-meta">
                                                 <span className="gdtd-result-category">
                                                     {item.category||'Giáo dục'}
@@ -170,7 +175,7 @@ function SearchPage() {
                         {totalPages > 1 &&(
                             <nav className="mt-4">
                                 <ul className="pagination justify-content-center gdtd-pagination">
-                                    {Array.from({length: itemsPerPage}, (_, i) => i+1).map((page) =>(
+                                    {Array.from({length: totalPages}, (_, i) => i+1).map((page) =>(
                                         <li key={page} className={`page-item ${currentPage === page ? 'active':''}`}>
                                             <button className="page-link" onClick={() => {
                                                 setCurrentPage(page);
@@ -193,9 +198,9 @@ function SearchPage() {
                                         <span className={`gdtd-rank-num ${index<3 ?'top-3':''}`}>
                                             {index+1}
                                         </span>
-                                        <a href={item.link||'#'} target="_blank" rel="noreferrer" className="gdtd-most-read-link">
+                                        <Link to={`/bai-viet/${item.id}`} className="gdtd-most-read-link">
                                             {item.title}
-                                        </a>
+                                        </Link>
                                     </div>
                                 ))}
                             </div>
