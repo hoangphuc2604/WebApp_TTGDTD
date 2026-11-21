@@ -1,5 +1,5 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {Article, articles} from "../api/articleAPI";
+import {Article} from "../api/articleAPI";
 
 export type SortOrder = 'newest'|'oldest';
 interface SearchResult {
@@ -12,13 +12,24 @@ const initialState: SearchResult = {
     keywords:'',
     category:'all',
     sortBy:'newest',
-    results: articles,
+    results: [],
 }
-function filterArticle(keywords: string, category: string, sortBy: SortOrder) {
+function filterArticle(articles: Article[], keywords: string, category: string, sortBy: SortOrder) {
     const cleanKeywords = keywords.trim().toLowerCase();
     const cleanCategory = category.trim().toLowerCase();
+    const words = cleanKeywords.split(/\s+/).filter(word => word.length > 1);
     const filter = articles.filter(article => {
-        const matchKeywords = !cleanKeywords||article.title.toLowerCase().includes(cleanKeywords)||article.description.toLowerCase().includes(cleanKeywords);
+        const content = `${article.title || ''} ${article.description || ''}`.toLowerCase();
+
+        let matchKeywords = true;
+        if (words.length > 0) {
+            if (words.length <= 3) {
+                matchKeywords = words.every((word) => content.includes(word));
+            } else {
+                const matchedCount = words.filter((word) => content.includes(word)).length;
+                matchKeywords = matchedCount >= Math.ceil(words.length / 2);
+            }
+        }
         const matchCategory = cleanCategory === 'all'|| (article.category||'').toLowerCase() === cleanCategory;
         return matchKeywords && matchCategory;
     });
@@ -34,7 +45,12 @@ const searchSlice = createSlice({
     reducers:{
         executeSearch: (
             state,
-            action: PayloadAction<{ keywords?: string; category?: string; sortBy?: SortOrder}>
+            action: PayloadAction<{
+                articles: Article[];
+                keywords?: string;
+                category?: string;
+                sortBy?: SortOrder;
+            }>
         ) => {
             if (action.payload.keywords !== undefined) {
                 state.keywords = action.payload.keywords;
@@ -45,12 +61,18 @@ const searchSlice = createSlice({
             if (action.payload.sortBy !== undefined) {
                 state.sortBy = action.payload.sortBy;
             }
+            state.results = filterArticle(
+                action.payload.articles,
+                state.keywords,
+                state.category,
+                state.sortBy
+            );
         },
         resetSearch: (state: SearchResult) => {
             state.keywords = '';
             state.category = 'all';
             state.sortBy = 'newest';
-            state.results = articles;
+            state.results = [];
         }
     }
 })
