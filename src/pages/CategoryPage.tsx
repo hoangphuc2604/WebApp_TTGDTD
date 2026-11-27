@@ -88,11 +88,12 @@ function CategoryPage() {
                     <i className="fa-solid fa-bolt event-icon"></i>
                     <span className="event-title">Sự kiện</span>
                     <div className="event-tags" ref={scrollRef}>
-                        <span>#Tổng rà soát hệ thống văn bản quy phạm pháp luật</span>
-                        <span>#Giáo dục nghề nghiệp 2026</span>
-                        <span>#Kỳ thi tốt nghiệp THPT</span>
-                        <span>#Tuyển sinh đại học</span>
-                        <span>#Đổi mới giáo dục</span>
+                        {sortedArticles.slice(0, 5).map((article) => {
+                            const shortTag = article.title.split(" ").slice(0, 2).join(" ");
+                            return (
+                                <Link key={article.id} to={`/tim-kiem?q=${encodeURIComponent(shortTag)}`}>#{shortTag}</Link>
+                            );
+                        })}
                     </div>
                     <div className="event-arrows">
                         <i className="fa-solid fa-caret-left" onClick={() => scrollTags(-1)}></i>
