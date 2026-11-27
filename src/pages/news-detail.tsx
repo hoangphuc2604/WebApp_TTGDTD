@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Header from "../component/layout/Header";
 import Footer from "../component/layout/Footer";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
@@ -19,8 +19,14 @@ function ArticlePage() {
     const [commentText, setCommentText] = useState("");
     const [visibleCount, setVisibleCount] = useState(4);
     const [loadCount, setLoadCount] = useState(0);
-
+    const [isScrollLoading, setIsScrollLoading] = useState(false);
     const [slideIndex, setSlideIndex] = useState(0);
+
+    const formatDate = useCallback((dateStr?: string) => {
+        if (!dateStr) return "Mới cập nhật";
+        const d = new Date(dateStr);
+        return isNaN(d.getTime()) ? "Mới cập nhật" : d.toLocaleDateString("vi-VN");
+    }, []);
 
     useEffect(() => {
         if (articles.length === 0) {
@@ -33,38 +39,66 @@ function ArticlePage() {
         setVisibleCount(4);
         setLoadCount(0);
         setSlideIndex(0);
+        setFullHtml("");
+        setIsScrollLoading(false);
     }, [id]);
 
     const article = articles.find((a) => a.id === id);
 
     useEffect(() => {
-        if (article && article.link){
-            setIsFetchingFull(true);
-            fetch(`http://localhost:5000/api/news/detail?url=${encodeURIComponent(article.link)}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.fullContent){
-                        setFullHtml(data.fullContent);
-                    }
+        if (!article || !article.link) return;
+
+        const controller = new AbortController();
+        const signal = controller.signal;
+
+        setIsFetchingFull(true);
+        fetch(`http://localhost:5000/api/news/detail?url=${encodeURIComponent(article.link)}`, { signal })
+            .then((res) => {
+                if (!res.ok) throw new Error("Lỗi mạng");
+                return res.json();
+            })
+            .then((data) => {
+                if (data.fullContent) {
+                    setFullHtml(data.fullContent);
+                }
+                setIsFetchingFull(false);
+            })
+            .catch((err) => {
+                if (err.name !== "AbortError") {
                     setIsFetchingFull(false);
-                })
-                .catch(() => setIsFetchingFull(false));
-        }
+                }
+            });
+
+        return () => {
+            controller.abort();
+        };
     }, [article]);
 
     useEffect(() => {
-        const handleScroll = () => {
-            if (loadCount >= 4) return;
+        let ticking = false;
 
-            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 400) {
-                setVisibleCount((prev) => prev + 4);
-                setLoadCount((prev) => prev + 1);
+        const handleScroll = () => {
+            if (loadCount >= 6 || isScrollLoading) return;
+
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 400) {
+                        setIsScrollLoading(true);
+                        setTimeout(() => {
+                            setVisibleCount((prev) => prev + 4);
+                            setLoadCount((prev) => prev + 1);
+                            setIsScrollLoading(false);
+                        }, 400);
+                    }
+                    ticking = false;
+                });
+                ticking = true;
             }
         };
 
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
-    }, [loadCount]);
+    }, [loadCount, isScrollLoading]);
 
     const parentCategory = menuItems.find((item) => item.path.includes(article?.category || ""));
     const categoryName = parentCategory ? parentCategory.label : "GIÁO DỤC";
@@ -115,9 +149,12 @@ function ArticlePage() {
         );
     }
 
-    const dontMissArticles = articles
-        .filter((a) => a.id !== article.id)
-        .slice(0, visibleCount);
+    const availableArticles = articles.filter((a) => a.id !== article.id);
+    const dontMissArticles = availableArticles.slice(0, visibleCount);
+
+    const handleLoadMoreClick = () => {
+        setVisibleCount((prev) => prev + 4);
+    };
 
     const bodyHtml =
         fullHtml || article.content
@@ -157,7 +194,7 @@ function ArticlePage() {
 
                             <div className="article-meta-wrapper">
                                 <span className="author">{article.author || "Hà Nguyễn"}</span>
-                                <span className="date">{new Date(article.date).toLocaleDateString("vi-VN")} (GMT+7)</span>
+                                <span className="date">{formatDate(article.date)} (GMT+7)</span>
                             </div>
 
                             <p className="article-sapo">
@@ -247,7 +284,7 @@ function ArticlePage() {
                                                             onError={(e) => { (e.target as HTMLImageElement).src = fallbackImage; }}
                                                         />
                                                         <h5>{item.title}</h5>
-                                                        <span className="time">{new Date(item.date).toLocaleDateString("vi-VN")}</span>
+                                                        <span className="time">{formatDate(item.date)}</span>
                                                     </Link>
                                                 </div>
                                             ))}
@@ -273,12 +310,27 @@ function ArticlePage() {
                                                     <h5>
                                                         <Link to={`/bai-viet/${item.id}`}>{item.title}</Link>
                                                     </h5>
-                                                    <span className="time">{new Date(item.date).toLocaleDateString("vi-VN")}</span>
+                                                    <span className="time">{formatDate(item.date)}</span>
                                                     <p>{item.description}</p>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
+
+                                    {isScrollLoading && (
+                                        <div className="text-center py-3 my-2 text-danger fw-semibold small">
+                                            <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                                            Đang tải thêm bài viết...
+                                        </div>
+                                    )}
+
+                                    {!isScrollLoading && loadCount >= 6 && visibleCount < availableArticles.length && (
+                                        <div className="text-center mt-4">
+                                            <button className="btn-load-more" onClick={handleLoadMoreClick}>
+                                                Xem thêm
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </article>

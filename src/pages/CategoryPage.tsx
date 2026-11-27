@@ -1,5 +1,5 @@
 import { useLocation, Link, useSearchParams } from "react-router-dom";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import Header from "../component/layout/Header";
 import Footer from "../component/layout/Footer";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
@@ -22,6 +22,19 @@ function CategoryPage() {
         useCategoryData();
 
     const scrollRef = useRef<HTMLDivElement>(null);
+
+    const formatDate = useCallback((dateStr?: string) => {
+        if (!dateStr) return "Mới cập nhật";
+        const d = new Date(dateStr);
+        return isNaN(d.getTime()) ? "Mới cập nhật" : d.toLocaleDateString("vi-VN");
+    }, []);
+
+    const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+        const target = e.currentTarget;
+        if (target.src !== fallbackImage) {
+            target.src = fallbackImage;
+        }
+    };
 
     useEffect(() => {
         if (articles.length === 0) {
@@ -49,7 +62,7 @@ function CategoryPage() {
 
     const scrollTags = (direction: number) => {
         if (scrollRef.current) {
-            scrollRef.current.scrollBy({ left: direction * 200, behavior: "smooth" });
+            scrollRef.current.scrollBy({ left: direction * 220, behavior: "smooth" });
         }
     };
 
@@ -103,7 +116,7 @@ function CategoryPage() {
                 </div>
 
                 {loading && articles.length === 0 ? (
-                    <h4 className="text-center mt-5" style={{ color: "red" }}>
+                    <h4 className="text-center mt-5" style={{ color: "#c31e40" }}>
                         Đang tải bài viết...
                     </h4>
                 ) : sortedArticles.length === 0 ? (
@@ -121,7 +134,7 @@ function CategoryPage() {
                                         <img
                                             src={featuredArticle.thumbnail}
                                             alt={featuredArticle.title}
-                                            onError={(e) => { (e.target as HTMLImageElement).src = fallbackImage; }}
+                                            onError={handleImageError}
                                         />
                                     </Link>
                                     <h2 className="featured-title">
@@ -129,7 +142,7 @@ function CategoryPage() {
                                             {featuredArticle.title}
                                         </Link>
                                     </h2>
-                                    <time>{new Date(featuredArticle.date).toLocaleString("vi-VN")}</time>
+                                    <time>{formatDate(featuredArticle.date)}</time>
                                     <p className="featured-desc">
                                         {featuredArticle.description || "Đang cập nhật nội dung..."}
                                     </p>
@@ -143,14 +156,14 @@ function CategoryPage() {
                                             <img
                                                 src={article.thumbnail}
                                                 alt={article.title}
-                                                onError={(e) => { (e.target as HTMLImageElement).src = fallbackImage; }}
+                                                onError={handleImageError}
                                             />
                                         </Link>
                                         <div className="list-info">
                                             <h3>
                                                 <Link to={`/bai-viet/${article.id}`}>{article.title}</Link>
                                             </h3>
-                                            <time>{new Date(article.date).toLocaleString("vi-VN")}</time>
+                                            <time>{formatDate(article.date)}</time>
                                             <p>{article.description || "Đang cập nhật nội dung..."}</p>
                                         </div>
                                     </article>
@@ -175,7 +188,7 @@ function CategoryPage() {
                                             <img
                                                 src={article.thumbnail}
                                                 alt={article.title}
-                                                onError={(e) => { (e.target as HTMLImageElement).src = fallbackImage; }}
+                                                onError={handleImageError}
                                             />
                                         </Link>
                                         <h4>
@@ -193,7 +206,7 @@ function CategoryPage() {
                                             <img
                                                 src={article.thumbnail}
                                                 alt={article.title}
-                                                onError={(e) => { (e.target as HTMLImageElement).src = fallbackImage; }}
+                                                onError={handleImageError}
                                             />
                                         </Link>
                                         <h4>
