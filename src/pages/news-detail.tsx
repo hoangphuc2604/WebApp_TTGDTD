@@ -17,6 +17,10 @@ function ArticlePage() {
     const [fullHtml, setFullHtml] = useState<string>("");
     const [isFetchingFull, setIsFetchingFull] = useState(false);
     const [commentText, setCommentText] = useState("");
+    const [visibleCount, setVisibleCount] = useState(4);
+    const [loadCount, setLoadCount] = useState(0);
+
+    const [slideIndex, setSlideIndex] = useState(0);
 
     useEffect(() => {
         if (articles.length === 0) {
@@ -26,6 +30,9 @@ function ArticlePage() {
 
     useEffect(() => {
         window.scrollTo(0, 0);
+        setVisibleCount(4);
+        setLoadCount(0);
+        setSlideIndex(0);
     }, [id]);
 
     const article = articles.find((a) => a.id === id);
@@ -44,6 +51,44 @@ function ArticlePage() {
                 .catch(() => setIsFetchingFull(false));
         }
     }, [article]);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (loadCount >= 4) return;
+
+            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 400) {
+                setVisibleCount((prev) => prev + 4);
+                setLoadCount((prev) => prev + 1);
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, [loadCount]);
+
+    const parentCategory = menuItems.find((item) => item.path.includes(article?.category || ""));
+    const categoryName = parentCategory ? parentCategory.label : "GIÁO DỤC";
+    const subLinks = parentCategory?.children || [];
+
+    const related = articles
+        .filter((a) => a.category === article?.category && a.id !== article?.id)
+        .slice(0, 4);
+
+    const sameCategoryArticles = articles
+        .filter((a) => a.category === article?.category && a.id !== article?.id)
+        .slice(4, 13);
+
+    const maxSlides = Math.ceil(sameCategoryArticles.length / 3) || 1;
+
+    useEffect(() => {
+        if (sameCategoryArticles.length === 0) return;
+
+        const timer = setInterval(() => {
+            setSlideIndex((prev) => (prev + 1) % maxSlides);
+        }, 3500);
+
+        return () => clearInterval(timer);
+    }, [sameCategoryArticles.length, maxSlides]);
 
     if (loading && articles.length === 0) {
         return (
@@ -70,21 +115,9 @@ function ArticlePage() {
         );
     }
 
-    const parentCategory = menuItems.find((item) => item.path.includes(article.category || ""));
-    const categoryName = parentCategory ? parentCategory.label : "GIÁO DỤC";
-    const subLinks = parentCategory?.children || [];
-
-    const related = articles
-        .filter((a) => a.category === article.category && a.id !== article.id)
-        .slice(0, 4);
-
-    const sameCategoryArticles = articles
-        .filter((a) => a.category === article.category && a.id !== article.id)
-        .slice(4, 10);
-
     const dontMissArticles = articles
         .filter((a) => a.id !== article.id)
-        .slice(10, 14);
+        .slice(0, visibleCount);
 
     const bodyHtml =
         fullHtml || article.content
@@ -191,25 +224,34 @@ function ArticlePage() {
                                     <div className="cung-chuyen-muc-header">
                                         <h4>CÙNG CHUYÊN MỤC</h4>
                                         <div className="slider-dots">
-                                            <span className="dot active"></span>
-                                            <span className="dot"></span>
-                                            <span className="dot"></span>
+                                            {Array.from({ length: maxSlides }).map((_, i) => (
+                                                <span
+                                                    key={i}
+                                                    className={`dot ${slideIndex === i ? "active" : ""}`}
+                                                    onClick={() => setSlideIndex(i)}
+                                                ></span>
+                                            ))}
                                         </div>
                                     </div>
-                                    <div className="cung-chuyen-muc-list">
-                                        {sameCategoryArticles.map((item) => (
-                                            <div key={item.id} className="cung-chuyen-muc-item">
-                                                <Link to={`/bai-viet/${item.id}`}>
-                                                    <img
-                                                        src={item.thumbnail}
-                                                        alt={item.title}
-                                                        onError={(e) => { (e.target as HTMLImageElement).src = fallbackImage; }}
-                                                    />
-                                                    <h5>{item.title}</h5>
-                                                    <span className="time">{new Date(item.date).toLocaleDateString("vi-VN")}</span>
-                                                </Link>
-                                            </div>
-                                        ))}
+                                    <div className="cung-chuyen-muc-wrapper">
+                                        <div
+                                            className="cung-chuyen-muc-track"
+                                            style={{ transform: `translateX(-${slideIndex * 100}%)` }}
+                                        >
+                                            {sameCategoryArticles.map((item) => (
+                                                <div key={item.id} className="cung-chuyen-muc-item">
+                                                    <Link to={`/bai-viet/${item.id}`}>
+                                                        <img
+                                                            src={item.thumbnail}
+                                                            alt={item.title}
+                                                            onError={(e) => { (e.target as HTMLImageElement).src = fallbackImage; }}
+                                                        />
+                                                        <h5>{item.title}</h5>
+                                                        <span className="time">{new Date(item.date).toLocaleDateString("vi-VN")}</span>
+                                                    </Link>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             )}
