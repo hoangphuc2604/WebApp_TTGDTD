@@ -154,6 +154,23 @@ app.get('/api/news/detail', async (req, res) => {
             headers: {'User-Agent': USER_AGENT}
         });
         const $ = cheerio.load(response.data);
+        const tagsSet = new Set();
+        $('.article__tag .box-content a, .article__tag a, a[href*="/tu-khoa/"]').each((_,el) =>{
+            const tagText = $(el).text().trim();
+            if(tagText) {
+                tagsSet.add(tagText);
+            }
+        })
+        if (tagsSet.size === 0) {
+            const metaKeywords = $('meta[name="news_keywords"]').attr('content') || $('meta[name="keywords"]').attr('content');
+            if (metaKeywords) {
+                metaKeywords.split(',').forEach(kw => {
+                    const cleanKw = kw.trim();
+                    if (cleanKw) tagsSet.add(cleanKw);
+                });
+            }
+        }
+        const tags = Array.from(tagsSet).slice(0,6);
         $('script, style, iframe, .box-related, .relate-news, .author-info').remove();
         $('.article__body img, .detail-content img, .story__content img').each((i, el) => {
             let src = $(el).attr('data-src') || $(el).attr('src');
@@ -171,7 +188,7 @@ app.get('/api/news/detail', async (req, res) => {
         if (!contentHtml) {
             return res.status(404).json({message: 'Không cào được nội dung'});
         }
-        res.status(200).json({fullContent: contentHtml});
+        res.status(200).json({fullContent: contentHtml, tags});
     } catch (err) {
         console.error('Lỗi chi tiết: ', err.message);
         res.status(500).json({message: 'Lỗi server khi cào bài báo', error: err.message});

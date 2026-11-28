@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Header from "../component/layout/Header";
 import Footer from "../component/layout/Footer";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
@@ -16,6 +16,7 @@ function ArticlePage() {
 
     const [fullHtml, setFullHtml] = useState<string>("");
     const [isFetchingFull, setIsFetchingFull] = useState(false);
+    const [tags, setTags] = useState<string[]>([]);
     const [commentText, setCommentText] = useState("");
     const [visibleCount, setVisibleCount] = useState(4);
     const [loadCount, setLoadCount] = useState(0);
@@ -40,6 +41,7 @@ function ArticlePage() {
         setLoadCount(0);
         setSlideIndex(0);
         setFullHtml("");
+        setTags([]);
         setIsScrollLoading(false);
     }, [id]);
 
@@ -60,6 +62,9 @@ function ArticlePage() {
             .then((data) => {
                 if (data.fullContent) {
                     setFullHtml(data.fullContent);
+                }
+                if(Array.isArray(data.tags)){
+                    setTags(data.tags);
                 }
                 setIsFetchingFull(false);
             })
@@ -221,10 +226,21 @@ function ArticlePage() {
 
                             <div className="article-tags mt-4 mb-5">
                                 <Link to={`/chuyen-muc/${article.category}`} className="tag-item">
-                                    {article.category || "Giáo dục"}
+                                    {parentCategory ? parentCategory.label : (article.category || "Giáo dục")}
                                 </Link>
-                                <span className="tag-item">Tin tức</span>
-                                <span className="tag-item">Sự kiện</span>
+                                {tags
+                                    .filter((tag) =>
+                                        tag.toLowerCase() !== (article.category || "").toLowerCase() &&
+                                        tag.toLowerCase() !== categoryName.toLowerCase()
+                                    )
+                                    .map((tag, index) => (
+                                        <span key={index} className="tag-item">
+                                            {tag}
+                                        </span>
+                                    ))}
+                                {!isFetchingFull && tags.length === 0 && (
+                                    <span className="tag-item">Tin tức</span>
+                                )}
                             </div>
 
                             {related.length > 0 && (

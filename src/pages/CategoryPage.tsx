@@ -1,5 +1,5 @@
 import { useLocation, Link, useSearchParams } from "react-router-dom";
-import { useEffect, useRef, useCallback } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import Header from "../component/layout/Header";
 import Footer from "../component/layout/Footer";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
