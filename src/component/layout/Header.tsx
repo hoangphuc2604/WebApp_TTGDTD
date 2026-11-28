@@ -1,8 +1,10 @@
 import {Link, NavLink, useNavigate} from "react-router-dom";
-import React, {useState} from "react";
+import React, {useState, useEffect, useRef, useMemo, useCallback} from "react";
 import logo from "../../assets/images/logo.svg";
 import logoGDTD from "../../assets/images/gdtd.png";
 import "./Header.css";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { fetchNews } from "../../store/newsSlice";
 
 export interface MenuChild {
     label: string;
@@ -131,12 +133,65 @@ function Header() {
         hourCycle: "h23",
         timeZone: "Asia/Ho_Chi_Minh",
     }).format(new Date());
-    const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
-    const handleSearch = (e : React.FormEvent) => {
+
+    const dispatch = useAppDispatch();
+    const { articles } = useAppSelector((state) => state.news);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const searchBoxRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (articles.length === 0) {
+            dispatch(fetchNews());
+        }
+    }, [articles.length, dispatch]);
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if(searchBoxRef.current && !searchBoxRef.current.contains(e.target as Node)) {
+                setShowSuggestions(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+    const { matchedTags, matchedArticles } = useMemo(() => {
+        const kw = searchQuery.trim().toLowerCase();
+        if (kw.length < 2){
+            return {matchedTags: [], matchedArticles: []};
+        }
+        const tagSet = new Set<string>();
+        const foundArticles = [];
+        for (const article of articles) {
+            if (Array.isArray(article.tags)) {
+                for (const tag of article.tags) {
+                    if(tag.toLowerCase().includes(kw)){
+                        tagSet.add(tag);
+                    }
+                }
+            }
+            if (foundArticles.length < 5){
+                const inTitle = article.title?.toLowerCase().includes(kw);
+                const inDesc = article.description?.toLowerCase().includes(kw);
+                const inTags = article.tags?.some((t) => t.toLowerCase().includes(kw));
+
+                if (inTitle || inDesc || inTags) {
+                    foundArticles.push(article);
+                }
+            }
+        }
+        return {
+            matchedTags: Array.from(tagSet).slice(0,4),
+            matchedArticles: foundArticles,
+        };
+    }, [searchQuery, articles]);
+    const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        navigate(`/tim-kiem?q=${encodeURIComponent(searchTerm.trim())}`);
-    }
+        const trimmed = searchQuery.trim();
+        setShowSuggestions(false);
+        navigate(trimmed ? `/tim-kiem?q=${encodeURIComponent(trimmed)}` : "/tim-kiem");
+    };
 
     return (
         <>
@@ -173,19 +228,90 @@ function Header() {
                             </Link>
                             <div className="brand-right">
 
-                                <form className="search-box" onSubmit={handleSearch} >
-                                    <input
-                                        type="text"
-                                        placeholder="Tìm kiếm..."
-                                        aria-label="Nhập nội dung tìm kiếm"
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                    />
-                                    <button type="submit" aria-label="Tìm kiếm">
-                                        {/* Thay icon kính lúp */}
-                                        <i className="fa-solid fa-magnifying-glass"></i>
-                                    </button>
-                                </form>
+                                <div ref={searchBoxRef} className="header-search-wrapper">
+                                    <form className="search-box" onSubmit={handleSearchSubmit}>
+                                        <input
+                                            type="text"
+                                            placeholder="Tìm kiếm..."
+                                            aria-label="Nhập nội dung tìm kiếm"
+                                            value={searchQuery}
+                                            onFocus={() => setShowSuggestions(true)}
+                                            onChange={(e) => {
+                                                setSearchQuery(e.target.value);
+                                                setShowSuggestions(true);
+                                            }}
+                                        />
+                                        <button type="submit" aria-label="Tìm kiếm">
+                                            <i className="fa-solid fa-magnifying-glass"></i>
+                                        </button>
+                                    </form>
+
+                                    {showSuggestions && searchQuery.trim().length >= 2 && (
+                                        <div className="search-autocomplete-dropdown">
+                                            {matchedTags.length > 0 && (
+                                                <div className="autocomplete-section border-bottom">
+                                                    <div className="autocomplete-label">Từ khóa nổi bật</div>
+                                                    <div className="d-flex flex-wrap gap-1 px-3 pb-2">
+                                                        {matchedTags.map((tag, idx) => (
+                                                            <Link
+                                                                key={idx}
+                                                                to={`/tim-kiem?q=${encodeURIComponent(tag)}`}
+                                                                className="autocomplete-tag-pill"
+                                                                onClick={() => {
+                                                                    setSearchQuery(tag);
+                                                                    setShowSuggestions(false);
+                                                                }}
+                                                            >
+                                                                #{tag}
+                                                            </Link>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {matchedArticles.length > 0 ? (
+                                                <div className="autocomplete-section">
+                                                    <div className="autocomplete-label">Bài viết gợi ý</div>
+                                                    {matchedArticles.map((item) => (
+                                                        <Link
+                                                            key={item.id}
+                                                            to={`/bai-viet/${item.id}`}
+                                                            className="autocomplete-article-item"
+                                                            onClick={() => setShowSuggestions(false)}
+                                                        >
+                                                            <img
+                                                                src={item.thumbnail}
+                                                                alt={item.title}
+                                                                onError={(e) => {
+                                                                    (e.target as HTMLImageElement).src =
+                                                                        "https://via.placeholder.com/300x200?text=No+Image";
+                                                                }}
+                                                            />
+                                                            <div className="autocomplete-article-info">
+                                                                <div className="autocomplete-article-title">{item.title}</div>
+                                                                <small className="text-muted">{item.category}</small>
+                                                            </div>
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                matchedTags.length === 0 && (
+                                                    <div className="p-3 text-center text-muted small">
+                                                        Không có gợi ý nhanh cho "{searchQuery}"
+                                                    </div>
+                                                )
+                                            )}
+
+                                            <Link
+                                                to={`/tim-kiem?q=${encodeURIComponent(searchQuery.trim())}`}
+                                                className="autocomplete-view-all"
+                                                onClick={() => setShowSuggestions(false)}
+                                            >
+                                                Xem tất cả kết quả cho <strong>"{searchQuery.trim()}"</strong> →
+                                            </Link>
+                                        </div>
+                                    )}
+                                </div>
                                 <a href="#" className="logo-gdtd">
                                     <img src={logoGDTD} alt="Giáo dục Thủ đô" />
                                 </a>

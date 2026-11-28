@@ -230,7 +230,7 @@ app.get('/api/trending', async (req, res) => {
     try {
         const response = await axios.get('https://giaoducthoidai.vn/',{
             headers: {'User-Agent': USER_AGENT},
-            timeout: 10000
+            timeout: 100000
         });
         const $ = cheerio.load(response.data);
         const topicsSet = new Set();
