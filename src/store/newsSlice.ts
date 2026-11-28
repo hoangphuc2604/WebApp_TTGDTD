@@ -25,7 +25,8 @@ const initialState: NewsState = {
 };
 
 export const fetchNews = createAsyncThunk<NewsArticle[]>('news/fetchNews', async () =>{
-    const response = await axios.get('http://localhost:5000/api/news');
+    const apiURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const response = await axios.get(`${apiURL}/api/news`);
     return response.data;
 });
 
