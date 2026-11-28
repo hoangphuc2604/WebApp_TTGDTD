@@ -17,6 +17,7 @@ import HomePage from './pages/HomePage';
 import SearchPage from './pages/searchPage';
 
 import CategoryPage from './pages/CategoryPage';
+import ScrollToTop from "./component/ScrollToTop";
 interface ProtectedRouteProps {
     children: React.ReactNode;
 }
@@ -54,6 +55,7 @@ const App: React.FC = () => {
 
     return (
         <Router>
+            <ScrollToTop />
             <Routes>
                 <Route path="/" element={<HomePage />}/>
                 <Route path="/bai-viet/:id" element={<ChiTietSanPham />} />

@@ -234,9 +234,9 @@ function ArticlePage() {
                                         tag.toLowerCase() !== categoryName.toLowerCase()
                                     )
                                     .map((tag, index) => (
-                                        <span key={index} className="tag-item">
+                                        <Link key={index} to={`/tim-kiem?q=${encodeURIComponent(tag)}`} className="tag-item">
                                             {tag}
-                                        </span>
+                                        </Link>
                                     ))}
                                 {!isFetchingFull && tags.length === 0 && (
                                     <span className="tag-item">Tin tức</span>
