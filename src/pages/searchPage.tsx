@@ -167,6 +167,19 @@ function SearchPage() {
                                             <p className="gdtd-result-sapo">
                                                 <HighlightText text={item.description} keywords={keywords} />
                                             </p>
+                                            {item.tags && item.tags.length > 0 && (
+                                                <div className="d-flex flex-wrap gap-1 mt-2">
+                                                    {item.tags.map((tag, idx) => (
+                                                        <Link
+                                                            key={idx}
+                                                            to={`/tim-kiem?q=${encodeURIComponent(tag)}`}
+                                                            className="badge rounded-pill text-bg-light border text-decoration-none text-secondary fw-normal"
+                                                        >
+                                                            #<HighlightText text={tag} keywords={keywords} />
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     </article>
                                 ))}

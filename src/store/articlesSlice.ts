@@ -2,6 +2,7 @@ import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {Article} from "../api/articleAPI";
 
 export type SortOrder = 'newest'|'oldest';
+export type SearchArticle = Article & {tags?: string[]};
 interface SearchResult {
     keywords: string;
     category: string;
@@ -19,7 +20,8 @@ function filterArticle(articles: Article[], keywords: string, category: string, 
     const cleanCategory = category.trim().toLowerCase();
     const words = cleanKeywords.split(/\s+/).filter(word => word.length > 1);
     const filter = articles.filter(article => {
-        const content = `${article.title || ''} ${article.description || ''}`.toLowerCase();
+        const tagsText = Array.isArray(article.tags) ? article.tags.join(' ') : '';
+        const content = `${article.title || ''} ${article.description || ''} ${tagsText}`.toLowerCase();
 
         let matchKeywords = true;
         if (words.length > 0) {

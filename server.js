@@ -80,7 +80,33 @@ function mapItemToArticle(item, feed, index) {
         date: item.pubDate || item.isoDate || new Date().toISOString(),
         link: item.link || '',
         category: feed.category,
+        tags: articlesTagsCache.get(item.link || '') || [],
     };
+}
+
+const articlesTagsCache = new Map();
+async function prewarmTags(articles) {
+    const uncached = articles.filter(article => article.link && !articlesTagsCache.has(article.link));
+    for(let i = 0; i < uncached.length; i += 5) {
+        const batch = uncached.slice(i, i + 5);
+        await Promise.all(batch.map(async (a) => {
+            try {
+                const res = await axios.get(a.link, {
+                    headers: { 'User-Agent': USER_AGENT },
+                    timeout: 8000,
+                });
+                const $ = cheerio.load(res.data);
+                const tagsSet = new Set();
+                $('.article__tag .box-content a, .article__tag a, a[href*="/tu-khoa/"]').each((_,el) =>{
+                    const tagText = $(el).text().trim();
+                    if(tagText) {
+                        tagsSet.add(tagText);
+                    }
+                })
+                articlesTagsCache.set(a.link, Array.from(tagsSet).slice(0, 6));
+            } catch {}
+        }))
+    }
 }
 
 app.get('/api/news', async (req, res) => {
@@ -122,12 +148,7 @@ app.get('/api/news', async (req, res) => {
                 map.set(key, article);
             }
         })
-        // let allArticles = [];
-        // results.forEach((items) => {
-        //     allArticles = [...allArticles, ...items];
-        // });
 
-        // allArticles.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
         const allArticles = Array.from(map.values()).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
         if (debug) {
             return res.status(200).json({
@@ -136,6 +157,7 @@ app.get('/api/news', async (req, res) => {
                 sample: allArticles.slice(0, 2),
             });
         }
+        prewarmTags(allArticles);
 
         res.status(200).json(allArticles);
     } catch (err) {
@@ -154,6 +176,24 @@ app.get('/api/news/detail', async (req, res) => {
             headers: {'User-Agent': USER_AGENT}
         });
         const $ = cheerio.load(response.data);
+        const tagsSet = new Set();
+        $('.article__tag .box-content a, .article__tag a, a[href*="/tu-khoa/"]').each((_,el) =>{
+            const tagText = $(el).text().trim();
+            if(tagText) {
+                tagsSet.add(tagText);
+            }
+        })
+        if (tagsSet.size === 0) {
+            const metaKeywords = $('meta[name="news_keywords"]').attr('content') || $('meta[name="keywords"]').attr('content');
+            if (metaKeywords) {
+                metaKeywords.split(',').forEach(kw => {
+                    const cleanKw = kw.trim();
+                    if (cleanKw) tagsSet.add(cleanKw);
+                });
+            }
+        }
+        const tags = Array.from(tagsSet).slice(0,6);
+        articlesTagsCache.set(articleUrl, tags);
         $('script, style, iframe, .box-related, .relate-news, .author-info').remove();
         $('.article__body img, .detail-content img, .story__content img').each((i, el) => {
             let src = $(el).attr('data-src') || $(el).attr('src');
@@ -171,7 +211,7 @@ app.get('/api/news/detail', async (req, res) => {
         if (!contentHtml) {
             return res.status(404).json({message: 'Không cào được nội dung'});
         }
-        res.status(200).json({fullContent: contentHtml});
+        res.status(200).json({fullContent: contentHtml, tags});
     } catch (err) {
         console.error('Lỗi chi tiết: ', err.message);
         res.status(500).json({message: 'Lỗi server khi cào bài báo', error: err.message});
@@ -190,7 +230,7 @@ app.get('/api/trending', async (req, res) => {
     try {
         const response = await axios.get('https://giaoducthoidai.vn/',{
             headers: {'User-Agent': USER_AGENT},
-            timeout: 10000
+            timeout: 100000
         });
         const $ = cheerio.load(response.data);
         const topicsSet = new Set();

@@ -1,9 +1,9 @@
 import { useParams, Link } from "react-router-dom";
-import { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Header from "../component/layout/Header";
 import Footer from "../component/layout/Footer";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { fetchNews } from "../store/newsSlice";
+import { fetchNews, setArticleTags } from "../store/newsSlice";
 import { menuItems } from "../component/layout/Header";
 import "./news-detail.css";
 
@@ -16,6 +16,7 @@ function ArticlePage() {
 
     const [fullHtml, setFullHtml] = useState<string>("");
     const [isFetchingFull, setIsFetchingFull] = useState(false);
+    const [tags, setTags] = useState<string[]>([]);
     const [commentText, setCommentText] = useState("");
     const [visibleCount, setVisibleCount] = useState(4);
     const [loadCount, setLoadCount] = useState(0);
@@ -40,20 +41,27 @@ function ArticlePage() {
         setLoadCount(0);
         setSlideIndex(0);
         setFullHtml("");
+        setTags([]);
         setIsScrollLoading(false);
     }, [id]);
 
     const article = articles.find((a) => a.id === id);
 
     useEffect(() => {
-        if (!article || !article.link) return;
+        const articleId = article?.id;
+        const articleLink = article?.link;
+        if (!articleId || !articleLink) return;
+
+        if (article?.tags && article.tags.length > 0) {
+            setTags(article.tags);
+        }
 
         const controller = new AbortController();
         const signal = controller.signal;
 
         setIsFetchingFull(true);
         const apiURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-        fetch(`${apiURL}/api/news/detail?url=${encodeURIComponent(article.link)}`, { signal })
+        fetch(`${apiURL}/api/news/detail?url=${encodeURIComponent(articleLink)}`, { signal })
             .then((res) => {
                 if (!res.ok) throw new Error("Lỗi mạng");
                 return res.json();
@@ -61,6 +69,10 @@ function ArticlePage() {
             .then((data) => {
                 if (data.fullContent) {
                     setFullHtml(data.fullContent);
+                }
+                if (Array.isArray(data.tags)){
+                    setTags(data.tags);
+                    dispatch(setArticleTags({id: articleId, tags: data.tags}));
                 }
                 setIsFetchingFull(false);
             })
@@ -73,7 +85,7 @@ function ArticlePage() {
         return () => {
             controller.abort();
         };
-    }, [article]);
+    }, [article?.id, article?.link, dispatch]);
 
     useEffect(() => {
         let ticking = false;
@@ -222,10 +234,21 @@ function ArticlePage() {
 
                             <div className="article-tags mt-4 mb-5">
                                 <Link to={`/chuyen-muc/${article.category}`} className="tag-item">
-                                    {article.category || "Giáo dục"}
+                                    {parentCategory ? parentCategory.label : (article.category || "Giáo dục")}
                                 </Link>
-                                <span className="tag-item">Tin tức</span>
-                                <span className="tag-item">Sự kiện</span>
+                                {tags
+                                    .filter((tag) =>
+                                        tag.toLowerCase() !== (article.category || "").toLowerCase() &&
+                                        tag.toLowerCase() !== categoryName.toLowerCase()
+                                    )
+                                    .map((tag, index) => (
+                                        <Link key={index} to={`/tim-kiem?q=${encodeURIComponent(tag)}`} className="tag-item">
+                                            {tag}
+                                        </Link>
+                                    ))}
+                                {!isFetchingFull && tags.length === 0 && (
+                                    <span className="tag-item">Tin tức</span>
+                                )}
                             </div>
 
                             {related.length > 0 && (
