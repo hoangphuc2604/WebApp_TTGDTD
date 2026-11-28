@@ -52,7 +52,8 @@ function ArticlePage() {
         const signal = controller.signal;
 
         setIsFetchingFull(true);
-        fetch(`http://localhost:5000/api/news/detail?url=${encodeURIComponent(article.link)}`, { signal })
+        const apiURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        fetch(`${apiURL}/api/news/detail?url=${encodeURIComponent(article.link)}`, { signal })
             .then((res) => {
                 if (!res.ok) throw new Error("Lỗi mạng");
                 return res.json();
