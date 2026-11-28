@@ -3,7 +3,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import Header from "../component/layout/Header";
 import Footer from "../component/layout/Footer";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { fetchNews } from "../store/newsSlice";
+import { fetchNews, setArticleTags } from "../store/newsSlice";
 import { menuItems } from "../component/layout/Header";
 import "./news-detail.css";
 
@@ -48,13 +48,19 @@ function ArticlePage() {
     const article = articles.find((a) => a.id === id);
 
     useEffect(() => {
-        if (!article || !article.link) return;
+        const articleId = article?.id;
+        const articleLink = article?.link;
+        if (!articleId || !articleLink) return;
+
+        if (article?.tags && article.tags.length > 0) {
+            setTags(article.tags);
+        }
 
         const controller = new AbortController();
         const signal = controller.signal;
 
         setIsFetchingFull(true);
-        fetch(`http://localhost:5000/api/news/detail?url=${encodeURIComponent(article.link)}`, { signal })
+        fetch(`http://localhost:5000/api/news/detail?url=${encodeURIComponent(articleLink)}`, { signal })
             .then((res) => {
                 if (!res.ok) throw new Error("Lỗi mạng");
                 return res.json();
@@ -63,8 +69,9 @@ function ArticlePage() {
                 if (data.fullContent) {
                     setFullHtml(data.fullContent);
                 }
-                if(Array.isArray(data.tags)){
+                if (Array.isArray(data.tags)){
                     setTags(data.tags);
+                    dispatch(setArticleTags({id: articleId, tags: data.tags}));
                 }
                 setIsFetchingFull(false);
             })
@@ -77,7 +84,7 @@ function ArticlePage() {
         return () => {
             controller.abort();
         };
-    }, [article]);
+    }, [article?.id, article?.link, dispatch]);
 
     useEffect(() => {
         let ticking = false;

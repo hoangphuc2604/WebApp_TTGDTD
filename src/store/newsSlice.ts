@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import {createSlice, createAsyncThunk, PayloadAction} from "@reduxjs/toolkit";
 import axios from "axios";
 
 export interface NewsArticle{
@@ -11,6 +11,7 @@ export interface NewsArticle{
     date: string;
     link: string;
     category: string;
+    tags?: string[];
 }
 
 interface NewsState {
@@ -31,7 +32,14 @@ export const fetchNews = createAsyncThunk<NewsArticle[]>('news/fetchNews', async
 const newsSlice = createSlice({
     name : 'news',
     initialState,
-    reducers: {},
+    reducers: {
+        setArticleTags: (state, action: PayloadAction<{id : string; tags: string[]}>) => {
+            const articles = state.articles.find((a) => a.id === action.payload.id);
+            if(articles){
+                articles.tags = action.payload.tags;
+            }
+        }
+    },
     extraReducers: builder => {
         builder
             .addCase(fetchNews.pending, state => {
@@ -47,4 +55,5 @@ const newsSlice = createSlice({
     }
 });
 
+export const { setArticleTags } = newsSlice.actions;
 export default newsSlice.reducer;

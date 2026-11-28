@@ -10,6 +10,7 @@ export interface Article {
     date: string;
     link: string;
     category: string;
+    tags?: string[];
 }
 export const articles: Article[] = (dbJson as Article[]).filter(
     (a) => a.thumbnail && !a.thumbnail.startsWith("data:")
